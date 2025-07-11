@@ -1,34 +1,38 @@
-#include <iostream> // cout, endl, cin
-#include <vector>
+#include <iostream>
 #include <algorithm>
+#include <vector>
 #include <random>
+#include <fstream>
 #include "json.hpp"
 using namespace std;
 using namespace nlohmann;
 
 int main()
 {
-    int size = 0;
-    do
+    int size;
+    cout << "フィールドのサイズ(4~24の偶数)? ";
+    cin >> size;
+
+    vector<int> entities(size * size);
+    for (int index = 0; index < size * size; index++)
     {
-        cout << "フィールドのサイズ(4~24の偶数)? ";
-        cin >> size;
-    } while (size % 2 != 0 || size < 4 || size > 24);
-    vector<vector<int>> entities(size, vector<int>(size));
-    for (int y = 0; y < size; y++)
-    {
-        for (int x = 0; x < size; x++)
-        {
-            entities[y][x] = (y * size + x) / 2;
-        }
-        // entities[index] = index / 2;
-        // entities[index + 1] = index / 2;
+        entities[index] = index / 2;
     }
     random_device seed_gen;
     mt19937 engine(seed_gen());
     shuffle(entities.begin(), entities.end(), engine);
-    // json problem;
-    // problem["startsAt"] = 0;
-    // problem["problem"]["field"]["size"] = size;
-    // problem["problem"]["field"]["entities"] = entities;
+
+    json problem;
+    problem["startsAt"] = 0;
+    problem["problem"]["field"]["size"] = size;
+    for (int y = 0; y < size; y++)
+    {
+        for (int x = 0; x < size; x++)
+        {
+            problem["problem"]["field"]["entities"][y][x] = entities[y * size + x];
+        }
+    }
+    ofstream output("problem.json");
+    output << setw(4) << problem << endl;
+    output.close();
 }
