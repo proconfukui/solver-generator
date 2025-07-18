@@ -5,7 +5,7 @@
 using namespace std;
 using namespace nlohmann;
 
-int size;
+int field_size;
 vector<vector<int>> field;
 
 int max_number;
@@ -25,15 +25,15 @@ void load_problem()
     json problem;
     input >> problem;
     input.close();
-    size = problem["problem"]["field"]["size"].get<int>();
+    field_size = problem["problem"]["field"]["size"].get<int>();
     field = problem["problem"]["field"]["entities"].get<vector<vector<int>>>();
-    max_number = size * size / 2;
+    max_number = field_size * field_size / 2;
     pair_coordinates = vector<vector<int>>(max_number, vector<int>(4, -1));
-    for (int y = 0; y < size; y++)
+    for (int y = 0; y < field_size; y++)
     {
-        for (int x = 0; x < size; x++)
+        for (int x = 0; x < field_size; x++)
         {
-            int number = field[y][x];
+        int number = field[y][x];
             if (pair_coordinates[number][0] == -1)
             {
                 pair_coordinates[number][0] = x;
@@ -52,9 +52,9 @@ void load_problem()
 void print_field()
 {
     cout << "手数: " << ops_x.size() << endl;
-    for (int y = 0; y < size; y++)
+    for (int y = 0; y < field_size; y++)
     {
-        for (int x = 0; x < size; x++)
+        for (int x = 0; x < field_size; x++)
         {
             cout << setw(3) << field[y][x] << " ";
         }
@@ -80,7 +80,7 @@ void print_pair_coordinates()
 
 void rotate_field(int x, int y, int n)
 {
-    if (n < 2 || x < 0 || x + n > size || y < 0 || y + n > size)
+    if (n < 2 || x < 0 || x + n > field_size || y < 0 || y + n > field_size)
     {
         cout << "導きが無効です(x: " << x << ", y: " << y << ", n: " << n << ")" << endl;
         return;
@@ -145,16 +145,133 @@ void export_answer()
     output.close();
 }
 
-void solve1(){
-    for (int y = 0; y < size; y+=2)
+void move_pair1(int target_entity, int goal_x, int goal_y)
+{
+    int current_x1 = pair_coordinates[target_entity][0];
+    int current_y1 = pair_coordinates[target_entity][1];
+    int current_x2 = pair_coordinates[target_entity][2];
+    int current_y2 = pair_coordinates[target_entity][3];
+
+    int target_pair_x, target_pair_y;
+
+    // goal_x, goal_y にあるのが1つ目と仮定し、2つ目を動かす
+    if (current_x1 == goal_x && current_y1 == goal_y)
     {
-        for (int x = 0; x < size; x+=2)
+        target_pair_x = current_x2;
+        target_pair_y = current_y2;
+    }
+    else // goal_x, goal_y にあるのが2つ目と仮定し、1つ目を動かす
+    {
+        target_pair_x = current_x1;
+        target_pair_y = current_y1;
+    }
+
+    // 目標地点 (goal_x, goal_y) の隣に移動させる
+    // まずX座標を合わせる
+    while (target_pair_x != goal_x + 1) // goal_x の右隣に移動
+    {
+        if (target_pair_x < goal_x + 1)
+        {
+            // 右に移動させる
+            // 回転の起点を調整して、負のインデックスにならないようにする
+            int rx = target_pair_x;
+            int ry = target_pair_y;
+            if (ry == field_size - 1) ry--; // 下端にいる場合は上にずらす
+            if (rx == field_size - 1) rx--; // 右端にいる場合は左にずらす
+            rotate_field(rx, ry, 2);
+        }
+        else // target_pair_x > goal_x + 1
+        {
+            // 左に移動させる
+            int rx = target_pair_x - 1;
+            int ry = target_pair_y;
+            if (ry == field_size - 1) ry--; // 下端にいる場合は上にずらす
+            if (rx < 0) rx = 0; // 左端にいる場合は0に固定
+            rotate_field(rx, ry, 2);
+        }
+        // 座標が更新されるので再取得
+        current_x1 = pair_coordinates[target_entity][0];
+        current_y1 = pair_coordinates[target_entity][1];
+        current_x2 = pair_coordinates[target_entity][2];
+        current_y2 = pair_coordinates[target_entity][3];
+        if (current_x1 == goal_x && current_y1 == goal_y)
+        {
+            target_pair_x = current_x2;
+            target_pair_y = current_y2;
+        }
+        else
+        {
+            target_pair_x = current_x1;
+            target_pair_y = current_y1;
+        }
+    }
+
+    // 次にY座標を合わせる
+    while (target_pair_y != goal_y)
+    {
+        if (target_pair_y < goal_y)
+        {
+            // 下に移動させる
+            int rx = target_pair_x;
+            int ry = target_pair_y;
+            if (rx == field_size - 1) rx--; // 右端にいる場合は左にずらす
+            if (ry == field_size - 1) ry--; // 下端にいる場合は上にずらす
+            rotate_field(rx, ry, 2);
+        }
+        else // target_pair_y > goal_y
+        {
+            // 上に移動させる
+            int rx = target_pair_x;
+            int ry = target_pair_y - 1;
+            if (rx == field_size - 1) rx--; // 右端にいる場合は左にずらす
+            if (ry < 0) ry = 0; // 上端にいる場合は0に固定
+            rotate_field(rx, ry, 2);
+        }
+        // 座標が更新されるので再取得
+        current_x1 = pair_coordinates[target_entity][0];
+        current_y1 = pair_coordinates[target_entity][1];
+        current_x2 = pair_coordinates[target_entity][2];
+        current_y2 = pair_coordinates[target_entity][3];
+        if (current_x1 == goal_x && current_y1 == goal_y)
+        {
+            target_pair_x = current_x2;
+            target_pair_y = current_y2;
+        }
+        else
+        {
+            target_pair_x = current_x1;
+            target_pair_y = current_y1;
+        }
+    }
+}
+
+void solve2()
+{
+    for (int y = 0; y < field_size; y++) // 全ての行を対象にする
+    {
+        for (int x = 0; x < field_size - 1; x++) // 右隣にペアを揃えるので、最後の列は対象外
+        {
+            int target = field[y][x];
+            // (y, x) にある target のペアを (y, x+1) に移動させる
+            // ただし、既にペアが揃っている場合はスキップ
+            if (field[y][x+1] == target) continue;
+
+            move_pair1(target, x, y); // target のペアの片方を (x, y) の隣に移動
+        }
+    }
+}
+
+
+void solve1(){
+    for (int y = 0; y < field_size; y+=2)
+    {
+        for (int x = 0; x < field_size; x+=2)
         {
             int target = field[y][x];
             // ペアが既に揃っていたらスキップ
             if (target == field[y][x+1]) continue; 
-            int target_pair_x = pair_coordinates[target_number][2];
-            int target_pair_y = pair_coordinates[target_number][3];
+            int target_pair_x = pair_coordinates[target][2];
+            int target_pair_y = pair_coordinates[target][3];
 
             // X 0 3 3  
             // 1 1 2 3 
@@ -162,7 +279,7 @@ void solve1(){
             // 2 2 2 3 
             // 上は4×4の場合の例。何回でXの右にペアを作れるかを示している
             // 下の二つのif文はは1回でペアを揃えられる時の条件とその導きである
-            if (x == target_pair_x && target_pair_y < size - x - 1){
+            if (x == target_pair_x && target_pair_y < field_size - x - 1){
                 rotate_field(x+1, y, target_pair_y +1 );
                 continue;
             }
@@ -182,10 +299,8 @@ int main()
     load_problem();
 
     print_field();
-    print_pair_coordinates();
-    rotate_field(0, 0, size);
+    solve2(); // solve2 を呼び出すように変更
     print_field();
-    print_pair_coordinates();
 
     export_answer();
 }
