@@ -68,7 +68,12 @@ void print_pair_coordinates()
 {
     for (int number = 0; number < max_number; number++)
     {
-        cout << setw(3) << number << ": (" << setw(2) << pair_coordinates[number][0] << ", " << setw(2) << pair_coordinates[number][1] << "), (" << setw(2) << pair_coordinates[number][2] << ", " << setw(2) << pair_coordinates[number][3] << ")" << endl;
+        cout << setw(3) << number 
+            << " (" << setw(2) << pair_coordinates[number][0] 
+            << ", " << setw(2) << pair_coordinates[number][1] 
+            << "), (" << setw(2) << pair_coordinates[number][2] 
+            << ", " << setw(2) << pair_coordinates[number][3] 
+            << ")" << endl;
     }
     cout << endl;
 }
@@ -83,14 +88,20 @@ void rotate_field(int x, int y, int n)
 
     for (int number = 0; number < max_number; number++)
     {
-        if (x <= pair_coordinates[number][0] && pair_coordinates[number][0] < x + n && y <= pair_coordinates[number][1] && pair_coordinates[number][1] < y + n)
+        if (x <= pair_coordinates[number][0] && 
+            pair_coordinates[number][0] < x + n && 
+            y <= pair_coordinates[number][1] && 
+            pair_coordinates[number][1] < y + n)
         {
             int dx = pair_coordinates[number][0] - x;
             int dy = pair_coordinates[number][1] - y;
             pair_coordinates[number][0] = x + n - 1 - dy;
             pair_coordinates[number][1] = y + dx;
         }
-        if (x <= pair_coordinates[number][2] && pair_coordinates[number][2] < x + n && y <= pair_coordinates[number][3] && pair_coordinates[number][3] < y + n)
+        if (x <= pair_coordinates[number][2] && 
+            pair_coordinates[number][2] < x + n && 
+            y <= pair_coordinates[number][3] && 
+            pair_coordinates[number][3] < y + n)
         {
             int dx = pair_coordinates[number][2] - x;
             int dy = pair_coordinates[number][3] - y;
@@ -132,6 +143,38 @@ void export_answer()
     ofstream output("answer.json");
     output << setw(4) << answer << endl;
     output.close();
+}
+
+void solve1(){
+    for (int y = 0; y < size; y+=2)
+    {
+        for (int x = 0; x < size; x+=2)
+        {
+            int target = field[y][x];
+            // ペアが既に揃っていたらスキップ
+            if (target == field[y][x+1]) continue; 
+            int target_pair_x = pair_coordinates[target_number][2];
+            int target_pair_y = pair_coordinates[target_number][3];
+
+            // X 0 3 3  
+            // 1 1 2 3 
+            // 2 1 2 2 
+            // 2 2 2 3 
+            // 上は4×4の場合の例。何回でXの右にペアを作れるかを示している
+            // 下の二つのif文はは1回でペアを揃えられる時の条件とその導きである
+            if (x == target_pair_x && target_pair_y < size - x - 1){
+                rotate_field(x+1, y, target_pair_y +1 );
+                continue;
+            }
+            if(x + 1 == target_pair_x && y == target_pair_y){
+                rotate_field(x, y, 2);
+                continue;
+            }
+                
+
+            
+        }
+    }
 }
 
 int main()
