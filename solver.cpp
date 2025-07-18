@@ -22,11 +22,45 @@ vector<int> ops_n = vector<int>(0);
 void load_problem()
 {
     ifstream input("problem.json");
+    if (!input) {
+        cerr << "Error: problem.json not found." << endl;
+        exit(1);
+    }
     json problem;
-    input >> problem;
-    input.close();
-    field_size = problem["problem"]["field"]["size"].get<int>();
-    field = problem["problem"]["field"]["entities"].get<vector<vector<int>>>();
+    try {
+        input >> problem;
+        input.close();
+
+        // contains()でキーの存在を確認してからアクセスする
+        if (problem.contains("problem") &&
+            problem["problem"].contains("field") &&
+            problem["problem"]["field"].contains("size") &&
+            problem["problem"]["field"]["size"].is_number_integer())
+        {
+            field_size = problem["problem"]["field"]["size"].get<int>();
+        } else {
+            throw std::runtime_error("JSON key 'size' is missing or not an integer.");
+        }
+
+        if (problem["problem"]["field"].contains("entities") &&
+            problem["problem"]["field"]["entities"].is_array())
+        {
+            field = problem["problem"]["field"]["entities"].get<vector<vector<int>>>();
+        } else {
+            throw std::runtime_error("JSON key 'entities' is missing or not a 2D array.");
+        }
+
+    } catch (const nlohmann::json::parse_error& e) {
+        cerr << "JSON parse error: " << e.what() << endl;
+        exit(1);
+    } catch (const nlohmann::json::type_error& e) {
+        cerr << "JSON type error: " << e.what() << endl;
+        exit(1);
+    } catch (const std::exception& e) {
+        cerr << "An error occurred: " << e.what() << endl;
+        exit(1);
+    }
+
     max_number = field_size * field_size / 2;
     pair_coordinates = vector<vector<int>>(max_number, vector<int>(4, -1));
     for (int y = 0; y < field_size; y++)
@@ -247,9 +281,9 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
 
 void solve2()
 {
-    for (int y = 0; y < field_size; y++) // 全ての行を対象にする
+    for (int y = 0; y < field_size - 2; y++) // 下から2行を処理対象外にする
     {
-        for (int x = 0; x < field_size - 1; x++) // 右隣にペアを揃えるので、最後の列は対象外
+        for (int x = 0; x < field_size - 2; x++) // 右から2列を処理対象外にする
         {
             int target = field[y][x];
             // (y, x) にある target のペアを (y, x+1) に移動させる
@@ -302,5 +336,5 @@ int main()
     solve2(); // solve2 を呼び出すように変更
     print_field();
 
-    export_answer();
+    // export_answer();
 }
