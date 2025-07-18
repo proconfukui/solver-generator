@@ -85,17 +85,13 @@ void rotate_field(int x, int y, int n)
     {
         if (x <= pair_coordinates[number][0] && pair_coordinates[number][0] < x + n && y <= pair_coordinates[number][1] && pair_coordinates[number][1] < y + n)
         {
-            int dx = pair_coordinates[number][0] - x;
-            int dy = pair_coordinates[number][1] - y;
-            pair_coordinates[number][0] = x + n - 1 - dy;
-            pair_coordinates[number][1] = y + dx;
+            pair_coordinates[number][0] = x + y + n - 1 - pair_coordinates[number][1];
+            pair_coordinates[number][1] = y - x + pair_coordinates[number][0];
         }
         if (x <= pair_coordinates[number][2] && pair_coordinates[number][2] < x + n && y <= pair_coordinates[number][3] && pair_coordinates[number][3] < y + n)
         {
-            int dx = pair_coordinates[number][2] - x;
-            int dy = pair_coordinates[number][3] - y;
-            pair_coordinates[number][2] = x + n - 1 - dy;
-            pair_coordinates[number][3] = y + dx;
+            pair_coordinates[number][2] = x + y + n - 1 - pair_coordinates[number][3];
+            pair_coordinates[number][3] = y - x + pair_coordinates[number][2];
         }
     }
 
@@ -134,15 +130,31 @@ void export_answer()
     output.close();
 }
 
+// g++ -o solver solver.cpp -std=c++14 でコンパイルしないとエラーを吐く
 int main()
 {
     load_problem();
 
     print_field();
-    print_pair_coordinates();
-    rotate_field(0, 0, size);
-    print_field();
-    print_pair_coordinates();
+    for (int y = 0; y < 2; y++)
+    {
+        for (int x = 0; x < size; x += 2)
+        {
+            int target_number = field[y][x];
+            if (field[y][x + 1] == target_number) // 既にペアが揃っている
+            {
+                continue;
+            }
+            if (field[y + 1][x] == target_number) // 直下にペアがある
+            {
+                rotate_field(x, y, 2);
+                print_field();
+                continue;
+            }
+            break;
+        }
+        break;
+    }
 
     export_answer();
 }
