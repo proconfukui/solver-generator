@@ -151,6 +151,13 @@ int main()
                 print_field();
                 continue;
             }
+            // 1手でペアが揃うパターン
+            if (pair_coordinates[target_number][2] == x + 1 && pair_coordinates[target_number][3] - y < size - 1 - x)
+            {
+                rotate_field(x + 1, y, pair_coordinates[target_number][3] + 1 - y);
+                print_field();
+                continue;
+            }
             break;
         }
         break;
