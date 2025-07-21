@@ -197,7 +197,7 @@ void export_answer()
     output.close();
 }
 
-void move_pair1(int target_entity, int goal_x, int goal_y)
+void move_pair1(int target_entity, int goal_x, int goal_y,int layer)
 {
 
     int current_x1 = pair_coordinates[target_entity][0];
@@ -257,20 +257,21 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         if (goal_pair_y == target_pair_y)
             return;
         int max_roteta_size;
-        if (field_size - target_pair_x <= target_pair_y - goal_pair_y)
+        if (field_size - layer - target_pair_x < target_pair_y - goal_pair_y + 1 )
         {
-            max_roteta_size = field_size - target_pair_x;
+            max_roteta_size = field_size - target_pair_x -layer;
         }
         else
         {
             max_roteta_size = target_pair_y - goal_pair_y + 1;
         }
         // targetが端にあるときのための処理
-        if (max_roteta_size == 1)
-        {
+        if (target_pair_x + 1  == field_size -layer){
             rotate_field(target_pair_x - 1, target_pair_y - 1, 2);
+            return;
         }
         rotate_field(target_pair_x, target_pair_y - max_roteta_size + 1, max_roteta_size);
+        return;
     }
 
     // targetが上に達して、かつgoalの左側にあるとき
@@ -321,64 +322,100 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
     }
 }
 
-void solve2()
-{
-    for (int y = 0; y < field_size; y++) // 下から2行を処理対象外にする
-    {
-        for (int x = 0; x < field_size; x += 2) // 右から2列を処理対象外にする
-        {
-            if (y == field_size - 2 && x >= field_size - 2)
-                break; // 最後の2×2ブロックは処理しない
-            int target = field[y][x];
-            // (y, x) にある target のペアを (y, x+1) に移動させる
-            // ただし、既にペアが揃っている場合はスキップ
-            if (field[y][x + 1] == target)
-                continue;
+// void solve2()
+// {
+//     for (int y = 0; y < field_size; y++) // 下から2行を処理対象外にする
+//     {
+//         for (int x = 0; x < field_size; x += 2) // 右から2列を処理対象外にする
+//         {
+//             if (y == field_size - 2 && x >= field_size - 2)
+//                 break; // 最後の2×2ブロックは処理しない
+//             int target = field[y][x];
+//             // (y, x) にある target のペアを (y, x+1) に移動させる
+//             // ただし、既にペアが揃っている場合はスキップ
+//             if (field[y][x + 1] == target)
+//                 continue;
 
-            move_pair1(target, x, y); // target のペアの片方を (x, y) の隣に移動
-            print_field();            // デバッグ用にフィールドを表示
-            print_pair_coordinates(); // デバッグ用にペアの座標を表示
-        }
-    }
-}
+//             move_pair1(target, x, y); // target のペアの片方を (x, y) の隣に移動
+//             print_field();            // デバッグ用にフィールドを表示
+//             print_pair_coordinates(); // デバッグ用にペアの座標を表示
+//         }
+//     }
+// }
 
+//回しながらmove_pair()を適応していく
 void solve1()
 {
-    for (int i = 0; i < field_size; i += 2)
+
+    for (int i = 0; i < field_size/2; i += 2)
     {
-        for (int x = 0; x < field_size; x += 2)
+        for (int x = i; x < field_size-i; x += 2)
         {
-            while (field[0][x] != field[0][x + 1])
+            while (field[i][x] != field[i][x + 1])
             {
-                move_pair1(field[0][x], x, 0);
+                move_pair1(field[i][x], x, i,i);
                 print_field();
             }
         }
-        for (int x = 0; x < field_size; x += 2)
+        for (int x = i; x < field_size-i; x += 2)
         {
-            while (field[1][x] != field[1][x + 1])
+            while (field[i + 1][x] != field[i + 1][x + 1])
             {
-                move_pair1(field[1][x], x, 1);
+                move_pair1(field[i + 1][x], x, i+1,i);
                 print_field();
             }
         }
         rotate_field(0, 0, field_size);
-        rotate_field(0, 0, field_size);
-        rotate_field(0, 0, field_size);
-        for (int x = 2; x < field_size; x += 2)
-        {
-            while (field[0][x] != field[0][x + 1])
-            {
-                move_pair1(field[0][x], x, 0);
-                print_field();
-            }
-        }
         print_field();
-        for (int x = 2; x < field_size; x += 2)
+        for (int x = i ; x < field_size-i-2; x += 2)
         {
-            while (field[1][x] != field[1][x + 1])
+            while (field[i][x] != field[i][x + 1])
             {
-                move_pair1(field[1][x], x, 1);
+                move_pair1(field[i][x], x, i,i+2);
+                print_field();
+            }
+        }
+        for (int x = i ; x < field_size-i-2; x += 2)
+        {
+            while (field[i + 1][x] != field[i + 1][x + 1])
+            {
+                move_pair1(field[i + 1][x], x, i + 1,i+2);
+                print_field();
+            }
+        }
+        rotate_field(0, 0, field_size);
+        print_field();
+        for (int x = i ; x < field_size-i-2; x += 2)
+        {
+            while (field[i][x] != field[i][x + 1])
+            {
+                move_pair1(field[i][x], x, i,i+2);
+                print_field();
+            }
+        }
+        for (int x = i ; x < field_size-i-2; x += 2)
+        {
+            while (field[i + 1][x] != field[i + 1][x + 1])
+            {
+                move_pair1(field[i + 1][x], x, i + 1,i+2);
+                print_field();
+            }
+        }
+        rotate_field(0, 0, field_size);
+        print_field();
+        for (int x = i +2; x < field_size-i-2; x += 2)
+        {
+            while (field[i][x] != field[i][x + 1])
+            {
+                move_pair1(field[i][x], x, i,i+2);
+                print_field();
+            }
+        }
+        for (int x = i +2; x < field_size-i-2; x += 2)
+        {
+            while (field[i + 1][x] != field[i + 1][x + 1])
+            {
+                move_pair1(field[i + 1][x], x, i + 1,i+2);
                 print_field();
             }
         }
@@ -389,7 +426,43 @@ int main()
 {
     load_problem();
 
-    print_field();
+    // print_field();
+
+    // for (int x = 0; x < field_size; x += 2)
+    // {
+    //     while (field[0][x] != field[0][x + 1])
+    //     {
+    //         move_pair1(field[0][x], x, 0,0);
+    //         print_field();
+    //     }
+    // }
+    // print_field();
+    // for(int x = 0; x < field_size; x += 2){
+    //     while(field[1][x] != field[1][x+1]){
+    //         move_pair1(field[1][x],x,1,0);
+    //         print_field();
+    //     }
+    // }
+    // print_field();
+    // rotate_field(0,0,field_size);
+    // rotate_field(0,0,field_size);
+    // rotate_field(0,0,field_size);
+    
+    // for (int x = 2; x < field_size; x += 2)
+    // {
+    //     while (field[0][x] != field[0][x + 1])
+    //     {
+    //         move_pair1(field[0][x], x, 0,0);
+    //         print_field();
+    //     }
+    // }
+    // print_field();
+    // for(int x = 2; x < field_size; x += 2){
+    //     while(field[1][x] != field[1][x+1]){
+    //         move_pair1(field[1][x],x,1,0);
+    //         print_field();
+    //     }
+    // }
 
     solve1();
 
