@@ -86,8 +86,14 @@ void load_problem()
 void print_field()
 {
     cout << "手数: " << ops_x.size() << endl;
+    cout << "   ";
+    for( int i = 0; i < field_size;i++){
+        cout<< setw(3) << i << "|";
+    }
+    cout << endl;
     for (int y = 0; y < field_size; y++)
     {
+        cout << setw(2) <<y << "|";
         for (int x = 0; x < field_size; x++)
         {
             cout << setw(3) << field[y][x] << " ";
@@ -187,6 +193,8 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
     int current_y2 = pair_coordinates[target_entity][3];
 
     int target_pair_x, target_pair_y;
+    int goal_pair_x = goal_x;
+    int goal_pair_y = goal_y;
 
     // goal_x, goal_y にあるのが1つ目と仮定し、2つ目を動かす
     if (current_x1 == goal_x && current_y1 == goal_y)
@@ -199,89 +207,40 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         target_pair_x = current_x1;
         target_pair_y = current_y1;
     }
-    if(target_pair_x == goal_x  && target_pair_y == goal_y+1)
+
+    // targetがgoalのすぐ下にある場合
+    if(goal_pair_x == target_pair_x && goal_pair_y + 1 == target_pair_y){
+        rotate_field(goal_pair_x,goal_pair_y,2);
+    }
+
+    // 動かしたいエンティティが目標の右下にある場合
+    if(goal_pair_x < target_pair_x && goal_pair_y < target_pair_y)
     {
-        rotate_field(goal_x, goal_y, 2);
+        goal_pair_x++;
+        int max_rotate_size;
+        if(target_pair_x - goal_pair_x < target_pair_y - goal_pair_y){
+            max_rotate_size = target_pair_x - goal_pair_x + 1;
+        }else{
+            max_rotate_size = target_pair_y - goal_pair_y + 1;
+        }
+        rotate_field(target_pair_x - max_rotate_size + 1, target_pair_y - max_rotate_size + 1,max_rotate_size);
+        return;
+    }
+    // 動かしたいエンティティが目標の左下にある場合
+    if(goal_pair_x > target_pair_x && goal_pair_y < target_pair_y){
+        goal_pair_x++;
+        int max_rotate_size;
+        if(goal_pair_x - target_pair_x < target_pair_y - goal_pair_y){
+            max_rotate_size = goal_pair_x -target_pair_x + 1;
+        }else{
+            max_rotate_size = goal_pair_y - target_pair_x + 1;
+        }
+        rotate_field(target_pair_x, target_pair_y - max_rotate_size + 1 , max_rotate_size);
         return;
     }
 
-    // 目標地点 (goal_x, goal_y) の隣に移動させる
-    // まずX座標を合わせる
-    while (target_pair_x != goal_x + 1) // goal_x の右隣に移動
-    {
-        if (target_pair_x < goal_x + 1)
-        {
-            // 右に移動させる
-            // 回転の起点を調整して、負のインデックスにならないようにする
-            int rx = target_pair_x;
-            int ry = target_pair_y;
-            if (ry == field_size - 1) ry--; // 下端にいる場合は上にずらす
-            if (rx == field_size - 1) rx--; // 右端にいる場合は左にずらす
-            rotate_field(rx, ry, 2);
-        }
-        else // target_pair_x > goal_x + 1
-        {
-            // 左に移動させる
-            int rx = target_pair_x - 1;
-            int ry = target_pair_y;
-            if (ry == field_size - 1) ry--; // 下端にいる場合は上にずらす
-            if (rx < 0) rx = 0; // 左端にいる場合は0に固定
-            rotate_field(rx, ry, 2);
-        }
-        // 座標が更新されるので再取得
-        current_x1 = pair_coordinates[target_entity][0];
-        current_y1 = pair_coordinates[target_entity][1];
-        current_x2 = pair_coordinates[target_entity][2];
-        current_y2 = pair_coordinates[target_entity][3];
-        if (current_x1 == goal_x && current_y1 == goal_y)
-        {
-            target_pair_x = current_x2;
-            target_pair_y = current_y2;
-        }
-        else
-        {
-            target_pair_x = current_x1;
-            target_pair_y = current_y1;
-        }
-    }
+    
 
-    // 次にY座標を合わせる
-    while (target_pair_y != goal_y)
-    {
-        if (target_pair_y < goal_y)
-        {
-            // 下に移動させる
-            int rx = target_pair_x;
-            int ry = target_pair_y;
-            if (rx == field_size - 1) rx--; // 右端にいる場合は左にずらす
-            if (ry == field_size - 1) ry--; // 下端にいる場合は上にずらす
-            rotate_field(rx, ry, 2);
-        }
-        else // target_pair_y > goal_y
-        {
-            // 上に移動させる
-            int rx = target_pair_x;
-            int ry = target_pair_y - 1;
-            if (rx == field_size - 1) rx--; // 右端にいる場合は左にずらす
-            if (ry < 0) ry = 0; // 上端にいる場合は0に固定
-            rotate_field(rx, ry, 2);
-        }
-        // 座標が更新されるので再取得
-        current_x1 = pair_coordinates[target_entity][0];
-        current_y1 = pair_coordinates[target_entity][1];
-        current_x2 = pair_coordinates[target_entity][2];
-        current_y2 = pair_coordinates[target_entity][3];
-        if (current_x1 == goal_x && current_y1 == goal_y)
-        {
-            target_pair_x = current_x2;
-            target_pair_y = current_y2;
-        }
-        else
-        {
-            target_pair_x = current_x1;
-            target_pair_y = current_y1;
-        }
-    }
 }
 
 void solve2()
@@ -341,7 +300,14 @@ int main()
     load_problem();
 
     print_field();
-    solve2(); // solve2 を呼び出すように変更
+    //move_pair1(field[0][0],0,0);
+    //move_pair1(field[0][10],10,0);
+    // for(int x = 0; x < field_size; x += 2){
+    //     while(field[0][x] != field[0][x+1]){
+    //         move_pair1(field[0][x],x,0);
+    //     }
+        
+    // }
     print_field();
 
     export_answer();
