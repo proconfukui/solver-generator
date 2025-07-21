@@ -199,6 +199,7 @@ void export_answer()
 
 void move_pair1(int target_entity, int goal_x, int goal_y)
 {
+
     int current_x1 = pair_coordinates[target_entity][0];
     int current_y1 = pair_coordinates[target_entity][1];
     int current_x2 = pair_coordinates[target_entity][2];
@@ -220,6 +221,11 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         target_pair_y = current_y1;
     }
 
+    if (goal_pair_x == target_pair_x && goal_pair_y == target_pair_y)
+    {
+        return;
+    }
+
     // targetがgoalのすぐ下にある場合
     if (goal_pair_x - 1 == target_pair_x && goal_pair_y + 1 == target_pair_y)
     {
@@ -227,7 +233,6 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         return;
     }
 
-    
     // targetが上に達して、かつgoalの右側にあるとき
     if (goal_pair_x < target_pair_x && goal_pair_y == target_pair_y)
     {
@@ -240,22 +245,32 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         {
             max_rotate_size = target_pair_x - goal_pair_x + 1;
         }
-        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
-        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
-        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
+        rotate_field(target_pair_x - max_rotate_size + 1, target_pair_y, max_rotate_size);
+        rotate_field(target_pair_x - max_rotate_size + 1, target_pair_y, max_rotate_size);
+        rotate_field(target_pair_x - max_rotate_size + 1, target_pair_y, max_rotate_size);
         return;
     }
 
     // targetがgoalの左に達した場合
-    if(goal_pair_x == target_pair_x){
-        if(goal_pair_y == target_pair_y) return;
+    if (goal_pair_x == target_pair_x)
+    {
+        if (goal_pair_y == target_pair_y)
+            return;
         int max_roteta_size;
-        if(field_size - target_pair_x <= target_pair_y-goal_pair_y){
+        if (field_size - target_pair_x <= target_pair_y - goal_pair_y)
+        {
             max_roteta_size = field_size - target_pair_x;
-        }else{
-            max_roteta_size = target_pair_y - goal_pair_y+1;
         }
-        rotate_field(target_pair_x,target_pair_y - max_roteta_size+1,max_roteta_size);
+        else
+        {
+            max_roteta_size = target_pair_y - goal_pair_y + 1;
+        }
+        // targetが端にあるときのための処理
+        if (max_roteta_size == 1)
+        {
+            rotate_field(target_pair_x - 1, target_pair_y - 1, 2);
+        }
+        rotate_field(target_pair_x, target_pair_y - max_roteta_size + 1, max_roteta_size);
     }
 
     // targetが上に達して、かつgoalの左側にあるとき
@@ -264,7 +279,7 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         int max_rotate_size;
         if (field_size - target_pair_y < goal_pair_x - target_pair_x)
         {
-            max_rotate_size = field_size -target_pair_y;
+            max_rotate_size = field_size - target_pair_y;
         }
         else
         {
@@ -273,7 +288,6 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         rotate_field(target_pair_x, target_pair_y, max_rotate_size);
         return;
     }
-
 
     // 動かしたいエンティティが目標の右下にある場合
     if (goal_pair_x < target_pair_x && goal_pair_y < target_pair_y)
@@ -294,7 +308,7 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
     if (goal_pair_x > target_pair_x && goal_pair_y < target_pair_y)
     {
         int max_rotate_size;
-        if (goal_pair_x - target_pair_x < target_pair_y - goal_pair_y )
+        if (goal_pair_x - target_pair_x < target_pair_y - goal_pair_y)
         {
             max_rotate_size = goal_pair_x - target_pair_x + 1;
         }
@@ -302,65 +316,6 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         {
             max_rotate_size = target_pair_y - goal_pair_y;
         }
-        rotate_field(target_pair_x, target_pair_y - max_rotate_size+1, max_rotate_size);
-        return;
-    }
-}
-
-void move_pair2(int target_entity, int goal_x, int goal_y)
-{
-    // アンカーと移動対象の駒の座標を特定（変更なし）
-    int current_x1 = pair_coordinates[target_entity][0];
-    int current_y1 = pair_coordinates[target_entity][1];
-    int current_x2 = pair_coordinates[target_entity][2];
-    int current_y2 = pair_coordinates[target_entity][3];
-
-    int target_pair_x, target_pair_y;
-    if (current_x1 == goal_x && current_y1 == goal_y) {
-        target_pair_x = current_x2;
-        target_pair_y = current_y2;
-    } else {
-        target_pair_x = current_x1;
-        target_pair_y = current_y1;
-    }
-
-    // 目標地点はアンカーの真下（変更なし）
-    int goal_pair_x = goal_x;
-    int goal_pair_y = goal_y + 1;
-
-    if (target_pair_x == goal_pair_x && target_pair_y == goal_pair_y) {
-        return;
-    }
-
-    // --- 戦略 (y>=2 の領域のみで操作する) ---
-
-    // 【ステップ1】列が合っていない場合、まず列を合わせる（左へ移動）
-    if (target_pair_x > goal_pair_x) {
-        // 駒を回転領域の「右下」に置いて回転させ、左へ移動させる
-        // 回転の上端がy=2より上に行かないように、回転サイズを制限する
-        int x_dist = target_pair_x - goal_pair_x;
-        int y_available_space = target_pair_y - 1; // 回転に使えるy方向のスペース (y=2が基準)
-
-        int max_rotate_size = min(x_dist + 1, y_available_space);
-        
-        // 回転サイズは最低でも2必要
-        if (max_rotate_size < 2) max_rotate_size = 2;
-
-        // 回転の実行
-        rotate_field(target_pair_x - max_rotate_size + 1, target_pair_y - max_rotate_size + 1, max_rotate_size);
-        return;
-    }
-
-    // 【ステップ2】列が合っている場合、行を合わせる（上へ移動）
-    // こちらのロジックは、もともとy=goal_y+1より上には行かないため安全でした。
-    if (target_pair_x == goal_pair_x && target_pair_y > goal_pair_y) {
-        // 駒を回転領域の「左下」に置いて回転させ、上へ移動させる
-        int y_dist = target_pair_y - goal_pair_y;
-        int x_space = field_size - target_pair_x; 
-
-        int max_rotate_size = min(y_dist, x_space);
-        if (max_rotate_size < 2) max_rotate_size = 2;
-        
         rotate_field(target_pair_x, target_pair_y - max_rotate_size + 1, max_rotate_size);
         return;
     }
@@ -389,32 +344,42 @@ void solve2()
 
 void solve1()
 {
-    for (int y = 0; y < field_size; y += 2)
+    for (int i = 0; i < field_size; i += 2)
     {
         for (int x = 0; x < field_size; x += 2)
         {
-            int target = field[y][x];
-            // ペアが既に揃っていたらスキップ
-            if (target == field[y][x + 1])
-                continue;
-            int target_pair_x = pair_coordinates[target][2];
-            int target_pair_y = pair_coordinates[target][3];
-
-            // X 0 3 3
-            // 1 1 2 3
-            // 2 1 2 2
-            // 2 2 2 3
-            // 上は4×4の場合の例。何回でXの右にペアを作れるかを示している
-            // 下の二つのif文はは1回でペアを揃えられる時の条件とその導きである
-            if (x == target_pair_x && target_pair_y < field_size - x - 1)
+            while (field[0][x] != field[0][x + 1])
             {
-                rotate_field(x + 1, y, target_pair_y + 1);
-                continue;
+                move_pair1(field[0][x], x, 0);
+                print_field();
             }
-            if (x + 1 == target_pair_x && y == target_pair_y)
+        }
+        for (int x = 0; x < field_size; x += 2)
+        {
+            while (field[1][x] != field[1][x + 1])
             {
-                rotate_field(x, y, 2);
-                continue;
+                move_pair1(field[1][x], x, 1);
+                print_field();
+            }
+        }
+        rotate_field(0, 0, field_size);
+        rotate_field(0, 0, field_size);
+        rotate_field(0, 0, field_size);
+        for (int x = 2; x < field_size; x += 2)
+        {
+            while (field[0][x] != field[0][x + 1])
+            {
+                move_pair1(field[0][x], x, 0);
+                print_field();
+            }
+        }
+        print_field();
+        for (int x = 2; x < field_size; x += 2)
+        {
+            while (field[1][x] != field[1][x + 1])
+            {
+                move_pair1(field[1][x], x, 1);
+                print_field();
             }
         }
     }
@@ -426,22 +391,7 @@ int main()
 
     print_field();
 
-    for (int x = 0; x < field_size; x += 2)
-    {
-        while (field[0][x] != field[0][x + 1])
-        {
-            move_pair1(field[0][x], x, 0);
-            print_field();
-        }
-    }
-    print_field();
-    for(int x = 0; x < field_size; x += 2){
-        while(field[1][x] != field[1][x+1]){
-            move_pair1(field[1][x],x,1);
-            print_field();
-        }
-    }
-    print_field();
+    solve1();
 
     export_answer();
 }
