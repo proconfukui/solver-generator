@@ -227,11 +227,30 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         return;
     }
 
+    
+    // targetが上に達して、かつgoalの右側にあるとき
+    if (goal_pair_x < target_pair_x && goal_pair_y == target_pair_y)
+    {
+        int max_rotate_size;
+        if (field_size - target_pair_y < target_pair_x - goal_pair_x)
+        {
+            max_rotate_size = field_size;
+        }
+        else
+        {
+            max_rotate_size = target_pair_x - goal_pair_x + 1;
+        }
+        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
+        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
+        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
+        return;
+    }
+
     // targetがgoalの左に達した場合
     if(goal_pair_x == target_pair_x){
         if(goal_pair_y == target_pair_y) return;
         int max_roteta_size;
-        if(field_size - target_pair_x < target_pair_y-goal_pair_y){
+        if(field_size - target_pair_x <= target_pair_y-goal_pair_y){
             max_roteta_size = field_size - target_pair_x;
         }else{
             max_roteta_size = target_pair_y - goal_pair_y+1;
@@ -255,23 +274,6 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         return;
     }
 
-    // targetが上に達して、かつgoalの右側にあるとき
-    if (goal_pair_x < target_pair_x && goal_pair_y == target_pair_y)
-    {
-        int max_rotate_size;
-        if (field_size - target_pair_y < target_pair_x - goal_pair_x)
-        {
-            max_rotate_size = field_size;
-        }
-        else
-        {
-            max_rotate_size = target_pair_x - goal_pair_x + 1;
-        }
-        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
-        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
-        rotate_field(target_pair_x -max_rotate_size+1, target_pair_y, max_rotate_size);
-        return;
-    }
 
     // 動かしたいエンティティが目標の右下にある場合
     if (goal_pair_x < target_pair_x && goal_pair_y < target_pair_y)
@@ -292,7 +294,7 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
     if (goal_pair_x > target_pair_x && goal_pair_y < target_pair_y)
     {
         int max_rotate_size;
-        if (goal_pair_x - target_pair_x < target_pair_y - goal_pair_y + 1)
+        if (goal_pair_x - target_pair_x < target_pair_y - goal_pair_y )
         {
             max_rotate_size = goal_pair_x - target_pair_x + 1;
         }
@@ -301,6 +303,65 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
             max_rotate_size = target_pair_y - goal_pair_y;
         }
         rotate_field(target_pair_x, target_pair_y - max_rotate_size+1, max_rotate_size);
+        return;
+    }
+}
+
+void move_pair2(int target_entity, int goal_x, int goal_y)
+{
+    // アンカーと移動対象の駒の座標を特定（変更なし）
+    int current_x1 = pair_coordinates[target_entity][0];
+    int current_y1 = pair_coordinates[target_entity][1];
+    int current_x2 = pair_coordinates[target_entity][2];
+    int current_y2 = pair_coordinates[target_entity][3];
+
+    int target_pair_x, target_pair_y;
+    if (current_x1 == goal_x && current_y1 == goal_y) {
+        target_pair_x = current_x2;
+        target_pair_y = current_y2;
+    } else {
+        target_pair_x = current_x1;
+        target_pair_y = current_y1;
+    }
+
+    // 目標地点はアンカーの真下（変更なし）
+    int goal_pair_x = goal_x;
+    int goal_pair_y = goal_y + 1;
+
+    if (target_pair_x == goal_pair_x && target_pair_y == goal_pair_y) {
+        return;
+    }
+
+    // --- 戦略 (y>=2 の領域のみで操作する) ---
+
+    // 【ステップ1】列が合っていない場合、まず列を合わせる（左へ移動）
+    if (target_pair_x > goal_pair_x) {
+        // 駒を回転領域の「右下」に置いて回転させ、左へ移動させる
+        // 回転の上端がy=2より上に行かないように、回転サイズを制限する
+        int x_dist = target_pair_x - goal_pair_x;
+        int y_available_space = target_pair_y - 1; // 回転に使えるy方向のスペース (y=2が基準)
+
+        int max_rotate_size = min(x_dist + 1, y_available_space);
+        
+        // 回転サイズは最低でも2必要
+        if (max_rotate_size < 2) max_rotate_size = 2;
+
+        // 回転の実行
+        rotate_field(target_pair_x - max_rotate_size + 1, target_pair_y - max_rotate_size + 1, max_rotate_size);
+        return;
+    }
+
+    // 【ステップ2】列が合っている場合、行を合わせる（上へ移動）
+    // こちらのロジックは、もともとy=goal_y+1より上には行かないため安全でした。
+    if (target_pair_x == goal_pair_x && target_pair_y > goal_pair_y) {
+        // 駒を回転領域の「左下」に置いて回転させ、上へ移動させる
+        int y_dist = target_pair_y - goal_pair_y;
+        int x_space = field_size - target_pair_x; 
+
+        int max_rotate_size = min(y_dist, x_space);
+        if (max_rotate_size < 2) max_rotate_size = 2;
+        
+        rotate_field(target_pair_x, target_pair_y - max_rotate_size + 1, max_rotate_size);
         return;
     }
 }
@@ -364,14 +425,7 @@ int main()
     load_problem();
 
     print_field();
-    // move_pair1(field[0][0],0,0);
-    // print_field();
-    // move_pair1(field[0][0],0,0);
-    // print_field();
-    // move_pair1(field[0][0],0,0);
-    // print_field();
-    // move_pair1(field[0][0],0,0);
-    // move_pair1(field[0][10],10,0);
+
     for (int x = 0; x < field_size; x += 2)
     {
         while (field[0][x] != field[0][x + 1])
@@ -387,7 +441,6 @@ int main()
             print_field();
         }
     }
-    //move_pair1(field[1][0], 0, 1);
     print_field();
 
     export_answer();
