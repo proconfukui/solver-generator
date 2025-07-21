@@ -4,8 +4,8 @@ chcp 65001 > nul
 
 rem --- 注意！ ---
 rem 以下の YOUR_USERNAME の部分は、ご自身のWindowsユーザー名に書き換えてください。
-rem 例: "C:\Users\Taro\プロコン\..."
-set "BASE_PATH=C:\Users\kyons\プロコン\Solver\solver-generator"
+rem 例: "C:\Users\Taro\procon\..."
+set "BASE_PATH=C:\Users\kyons\procon\Solver\solver-generator"
 
 
 echo --- Cleaning up old executables ---

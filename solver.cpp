@@ -199,6 +199,11 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
         target_pair_x = current_x1;
         target_pair_y = current_y1;
     }
+    if(target_pair_x == goal_x  && target_pair_y == goal_y+1)
+    {
+        rotate_field(goal_x, goal_y, 2);
+        return;
+    }
 
     // 目標地点 (goal_x, goal_y) の隣に移動させる
     // まずX座標を合わせる
@@ -281,16 +286,19 @@ void move_pair1(int target_entity, int goal_x, int goal_y)
 
 void solve2()
 {
-    for (int y = 0; y < field_size - 2; y++) // 下から2行を処理対象外にする
+    for (int y = 0; y < field_size; y++) // 下から2行を処理対象外にする
     {
-        for (int x = 0; x < field_size - 2; x++) // 右から2列を処理対象外にする
+        for (int x = 0; x < field_size; x+=2) // 右から2列を処理対象外にする
         {
+            if( y == field_size - 2 && x >= field_size - 2) break; // 最後の2×2ブロックは処理しない
             int target = field[y][x];
             // (y, x) にある target のペアを (y, x+1) に移動させる
             // ただし、既にペアが揃っている場合はスキップ
             if (field[y][x+1] == target) continue;
 
             move_pair1(target, x, y); // target のペアの片方を (x, y) の隣に移動
+            print_field(); // デバッグ用にフィールドを表示
+            print_pair_coordinates(); // デバッグ用にペアの座標を表示
         }
     }
 }
@@ -336,5 +344,5 @@ int main()
     solve2(); // solve2 を呼び出すように変更
     print_field();
 
-    // export_answer();
+    export_answer();
 }

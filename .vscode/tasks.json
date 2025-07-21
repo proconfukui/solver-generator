@@ -1,5 +1,44 @@
 {
+    "version": "2.0.0",
     "tasks": [
+        {
+            "label": "build-generator",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "generator.cpp",
+                "-o",
+                "generator.exe",
+                "-g",
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8",
+                "-Wall",
+                "-Wextra"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "build-solver",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "solver.cpp",
+                "-o",
+                "solver.exe",
+                "-g",
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8",
+                "-Wall",
+                "-Wextra"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
         {
             "type": "cppbuild",
             "label": "C/C++: g++.exe アクティブなファイルのビルド",
@@ -23,6 +62,5 @@
             },
             "detail": "デバッガーによって生成されたタスク。"
         }
-    ],
-    "version": "2.0.0"
+    ]
 }
