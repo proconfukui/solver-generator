@@ -322,28 +322,6 @@ void move_pair1(int target_entity, int goal_x, int goal_y,int layer)
     }
 }
 
-// void solve2()
-// {
-//     for (int y = 0; y < field_size; y++) // 下から2行を処理対象外にする
-//     {
-//         for (int x = 0; x < field_size; x += 2) // 右から2列を処理対象外にする
-//         {
-//             if (y == field_size - 2 && x >= field_size - 2)
-//                 break; // 最後の2×2ブロックは処理しない
-//             int target = field[y][x];
-//             // (y, x) にある target のペアを (y, x+1) に移動させる
-//             // ただし、既にペアが揃っている場合はスキップ
-//             if (field[y][x + 1] == target)
-//                 continue;
-
-//             move_pair1(target, x, y); // target のペアの片方を (x, y) の隣に移動
-//             print_field();            // デバッグ用にフィールドを表示
-//             print_pair_coordinates(); // デバッグ用にペアの座標を表示
-//         }
-//     }
-// }
-
-//回しながらmove_pair()を適応していく
 void solve1()
 {
 
@@ -425,44 +403,6 @@ void solve1()
 int main()
 {
     load_problem();
-
-    // print_field();
-
-    // for (int x = 0; x < field_size; x += 2)
-    // {
-    //     while (field[0][x] != field[0][x + 1])
-    //     {
-    //         move_pair1(field[0][x], x, 0,0);
-    //         print_field();
-    //     }
-    // }
-    // print_field();
-    // for(int x = 0; x < field_size; x += 2){
-    //     while(field[1][x] != field[1][x+1]){
-    //         move_pair1(field[1][x],x,1,0);
-    //         print_field();
-    //     }
-    // }
-    // print_field();
-    // rotate_field(0,0,field_size);
-    // rotate_field(0,0,field_size);
-    // rotate_field(0,0,field_size);
-    
-    // for (int x = 2; x < field_size; x += 2)
-    // {
-    //     while (field[0][x] != field[0][x + 1])
-    //     {
-    //         move_pair1(field[0][x], x, 0,0);
-    //         print_field();
-    //     }
-    // }
-    // print_field();
-    // for(int x = 2; x < field_size; x += 2){
-    //     while(field[1][x] != field[1][x+1]){
-    //         move_pair1(field[1][x],x,1,0);
-    //         print_field();
-    //     }
-    // }
 
     solve1();
 
