@@ -51,9 +51,16 @@ void load_problem()
 // デバッグ用
 void print_field()
 {
-    cout << "手数: " << ops_x.size() << endl;
+    cout << "手数: " << ops_x.size() << endl
+         << "   ";
     for (int y = 0; y < size; y++)
     {
+        cout << setw(3) << y << "|";
+    }
+    cout << endl;
+    for (int y = 0; y < size; y++)
+    {
+        cout << setw(2) << y << "|";
         for (int x = 0; x < size; x++)
         {
             cout << setw(3) << field[y][x] << " ";
@@ -128,6 +135,32 @@ void export_answer()
     ofstream output("answer.json");
     output << setw(4) << answer << endl;
     output.close();
+}
+
+void move_pair1(int target_entity, int goal_x, int goal_y)
+{
+    int target_x, target_y;
+    if (pair_coordinates[target_entity][0] == goal_x && pair_coordinates[target_entity][1] == goal_y)
+    {
+        // ペアの1つ目が(goal_x,goal_y)にある。2つ目を動かす
+        target_x = pair_coordinates[target_entity][2];
+        target_y = pair_coordinates[target_entity][3];
+    }
+    else
+    {
+        // ペアの2つ目が(goal_x,goal_y)にある。1つ目を動かす
+        target_x = pair_coordinates[target_entity][0];
+        target_y = pair_coordinates[target_entity][1];
+    }
+
+    // targetがgoalの直下にある
+    if (goal_x == target_x && goal_y + 1 == target_y)
+    {
+        rotate_field(goal_x, goal_y, 2);
+        return;
+    }
+
+    
 }
 
 // g++ -o solver solver.cpp -std=c++14 でコンパイルしないとエラーを吐く
