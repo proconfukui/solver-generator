@@ -1,6 +1,8 @@
 #include <vector>
+#include <array>
 #include <iostream>
 #include <fstream>
+#include <random>
 #include "json.hpp"
 using namespace std;
 using namespace nlohmann;
@@ -18,6 +20,9 @@ vector<vector<int>> pair_coordinates;
 vector<int> ops_x = vector<int>(0);
 vector<int> ops_y = vector<int>(0);
 vector<int> ops_n = vector<int>(0);
+
+random_device seed_gen;
+mt19937 engine(seed_gen());
 
 void load_problem()
 {
@@ -181,6 +186,54 @@ void rotate_field(int x, int y, int n)
     ops_x.push_back(x);
     ops_y.push_back(y);
     ops_n.push_back(n);
+}
+
+void rotate_field_temp(int x, int y, int n){
+    if (n < 2 || x < 0 || x + n > field_size || y < 0 || y + n > field_size)
+    {
+        cout << "導きが無効です(x: " << x << ", y: " << y << ", n: " << n << ")" << endl;
+        return;
+    }
+
+    for (int number = 0; number < max_number; number++)
+    {
+        if (x <= pair_coordinates[number][0] &&
+            pair_coordinates[number][0] < x + n &&
+            y <= pair_coordinates[number][1] &&
+            pair_coordinates[number][1] < y + n)
+        {
+            int dx = pair_coordinates[number][0] - x;
+            int dy = pair_coordinates[number][1] - y;
+            pair_coordinates[number][0] = x + n - 1 - dy;
+            pair_coordinates[number][1] = y + dx;
+        }
+        if (x <= pair_coordinates[number][2] &&
+            pair_coordinates[number][2] < x + n &&
+            y <= pair_coordinates[number][3] &&
+            pair_coordinates[number][3] < y + n)
+        {
+            int dx = pair_coordinates[number][2] - x;
+            int dy = pair_coordinates[number][3] - y;
+            pair_coordinates[number][2] = x + n - 1 - dy;
+            pair_coordinates[number][3] = y + dx;
+        }
+    }
+
+    vector<vector<int>> memo = vector<vector<int>>(n, vector<int>(n));
+    for (int dy = 0; dy < n; dy++)
+    {
+        for (int dx = 0; dx < n; dx++)
+        {
+            memo[dy][dx] = field[y + n - 1 - dx][x + dy];
+        }
+    }
+    for (int dy = 0; dy < n; dy++)
+    {
+        for (int dx = 0; dx < n; dx++)
+        {
+            field[y + dy][x + dx] = memo[dy][dx];
+        }
+    }
 }
 
 void export_answer()
@@ -400,11 +453,71 @@ void solve1()
     }
 }
 
+// ペアの数を数える
+int count_pair(){
+    int counter = 0;
+    for(int i = 0;i<max_number;i++){
+        int colm_dis = abs(pair_coordinates[i][0] - pair_coordinates[i][2]);
+        int row_dis = abs(pair_coordinates[i][1] - pair_coordinates[i][3]);
+        if(colm_dis == 0 && row_dis == 1 || colm_dis == 1 && row_dis == 0) counter++;
+    }
+    return counter;
+}
+
+void move2(){
+    int max_pair = 0;
+    int step_counter = 0; // 実験用
+    int calc_counter = 0; // 実験用
+    // すべての手でペア数が0のときのために初期値をランダムに設定する
+    uniform_int_distribution<> distrib(0,field_size-1);
+    int random_x = distrib(seed_gen);
+    int random_y = distrib(seed_gen);
+    if(random_x > random_y){
+        uniform_int_distribution(1,field_size - random_x);
+    } else{
+        uniform_int_distribution(1,field_size - random_y);
+    }
+    int random_n = distrib(seed_gen);
+    array<int,3> ops = {random_x,random_y,random_n};
+    for(int i = 0 ; i < field_size - 1 ; i++){
+        for(int j = 0 ; j < field_size -1 ; j++){
+            for(int k = 2; k <= field_size ; k++){
+                step_counter++;
+                calc_counter += k*k;
+                int colm_limit = field_size - i;
+                int row_limit = field_size - j;
+                if(!(k < colm_limit && k < row_limit)) break;
+                rotate_field_temp(i,j,k);
+                if(max_pair < count_pair()){
+                    max_pair = count_pair();
+                    ops = {i,j,k};
+                }
+                //元の位置に戻すため3回回転、逆回転1回で済むため用修正
+                rotate_field_temp(i,j,k);
+                rotate_field_temp(i,j,k);
+                rotate_field_temp(i,j,k);
+            }
+        }
+    }
+    cout << "手数の選択肢："<<step_counter << endl;
+    cout << "計算量" << calc_counter << endl;
+    rotate_field(ops[0],ops[1],ops[2]);
+}
+
+void solve2(int max_time){
+    for(int i = 0; i<max_time;i++){
+        move2();
+        cout <<  "ペアの数：" << count_pair() << endl;
+        if(count_pair()==max_number) return;
+    }
+}
+
 int main()
 {
     load_problem();
 
-    solve1();
+    solve2(10);    
+
 
     export_answer();
 }
