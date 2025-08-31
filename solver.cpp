@@ -17,6 +17,12 @@ int max_number;
 // pair_coordinates[n][3]: 値がnのエンティティ2つ目のY
 vector<vector<int>> pair_coordinates;
 
+// peforemance[n][0][0]: 評価値
+// peforemance[n][1][0]: 導きのx座標
+// peforemance[n][1][1]: 導きのy座標
+// peforemance[n][1][2]: 導きの大きさ
+vector<vector<vector<int>>> perpormance;
+
 vector<int> ops_x = vector<int>(0);
 vector<int> ops_y = vector<int>(0);
 vector<int> ops_n = vector<int>(0);
@@ -464,10 +470,20 @@ int count_pair(){
     return counter;
 }
 
+// ペア同士のマンハッタン距離の平均を求める
+int evaluate_manhattan_distanece_average(){
+    int counter = 0;
+    for(int i = 0;i<max_number;i++){
+        int colm_dis = abs(pair_coordinates[i][0] - pair_coordinates[i][2]);
+        int row_dis = abs(pair_coordinates[i][1] - pair_coordinates[i][3]);
+        counter += colm_dis + row_dis;
+    }
+    return counter/max_number;
+}
+
+// ペアの数が多いものを優先する
 void move2(){
     int max_pair = 0;
-    int step_counter = 0; // 実験用
-    int calc_counter = 0; // 実験用
     // すべての手でペア数が0のときのために初期値をランダムに設定する
     uniform_int_distribution<> distrib(0,field_size-1);
     int random_x = distrib(seed_gen);
@@ -482,8 +498,6 @@ void move2(){
     for(int i = 0 ; i < field_size - 1 ; i++){
         for(int j = 0 ; j < field_size -1 ; j++){
             for(int k = 2; k <= field_size ; k++){
-                step_counter++;
-                calc_counter += k*k;
                 int colm_limit = field_size - i;
                 int row_limit = field_size - j;
                 if(!(k < colm_limit && k < row_limit)) break;
@@ -499,8 +513,7 @@ void move2(){
             }
         }
     }
-    cout << "手数の選択肢："<<step_counter << endl;
-    cout << "計算量" << calc_counter << endl;
+
     rotate_field(ops[0],ops[1],ops[2]);
 }
 
@@ -512,11 +525,50 @@ void solve2(int max_time){
     }
 }
 
+// w1はペア数の重み、w2はペアの距離の重み
+void move3(int w1,int w2){
+    for(int i = 0 ; i < field_size - 1 ; i++){
+        for(int j = 0 ; j < field_size -1 ; j++){
+            for(int k = 2; k <= field_size ; k++){
+                int colm_limit = field_size - i;
+                int row_limit = field_size - j;
+                if(!(k < colm_limit && k < row_limit)) break;
+                rotate_field_temp(i,j,k);
+                int value = w1 * count_pair() + w2 * 10 / evaluate_manhattan_distanece_average(); 
+                cout << "ペア数："<< count_pair() << endl;
+                cout << "マンハッタン距離の平均："<<evaluate_manhattan_distanece_average() << endl;
+                cout << "評価："<<value << endl;
+                perpormance.push_back({{value},{i,j,k}});
+                //元の位置に戻すため3回回転、逆回転1回で済むため用修正
+                rotate_field_temp(i,j,k);
+                rotate_field_temp(i,j,k);
+                rotate_field_temp(i,j,k);
+            }
+        }
+    }
+    vector<vector<int>> max_value_pair={{0},{0,0,0}};
+    for(int i = 0; i < perpormance.size();i++){
+        if(max_value_pair[0][0] < perpormance[i][0][0]){
+            max_value_pair = perpormance[i];
+        }
+    }
+    rotate_field(max_value_pair[1][0],max_value_pair[1][1],max_value_pair[1][2]);
+}
+
+
+void solve3(int max_time){
+    for(int i = 0; i<max_time;i++){
+        move3(2,1);
+        cout <<  "ペアの数：" << count_pair() << endl;
+        if(count_pair()==max_number) return;
+    }
+}
+
 int main()
 {
     load_problem();
 
-    solve2(10);    
+    solve3(100);    
 
 
     export_answer();
