@@ -22,7 +22,7 @@ int main()
     mt19937 engine(seed_gen());
     shuffle(entities.begin(), entities.end(), engine);
 
-    json problem;
+    nlohmann::json problem;
     problem["startsAt"] = 0;
     problem["problem"]["field"]["size"] = size;
     for (int y = 0; y < size; y++)
