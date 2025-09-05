@@ -6,8 +6,7 @@
 #include <array>
 #include <iostream>
 
-
-void move_pair1(Puzzle& puzzle, int target_entity, int goal_x, int goal_y,int layer)
+void move_pair1(Puzzle &puzzle, int target_entity, int goal_x, int goal_y, int layer)
 {
     int current_x1 = puzzle.pair_coordinates[target_entity][0];
     int current_y1 = puzzle.pair_coordinates[target_entity][1];
@@ -60,8 +59,9 @@ void move_pair1(Puzzle& puzzle, int target_entity, int goal_x, int goal_y,int la
         return;
     }
     // targerがgoalのすぐ右下にある場合
-    if(goal_pair_x == target_pair_x && target_pair_y - 1 ==  goal_pair_y){
-        puzzle.apply_rotation({target_pair_x-1,target_pair_y,2});
+    if (goal_pair_x == target_pair_x && target_pair_y - 1 == goal_pair_y)
+    {
+        puzzle.apply_rotation({target_pair_x - 1, target_pair_y, 2});
         return;
     }
 
@@ -71,16 +71,17 @@ void move_pair1(Puzzle& puzzle, int target_entity, int goal_x, int goal_y,int la
         if (goal_pair_y == target_pair_y)
             return;
         int max_roteta_size;
-        if (puzzle.field_size - layer - target_pair_x < target_pair_y - goal_pair_y + 1 )
+        if (puzzle.field_size - layer - target_pair_x < target_pair_y - goal_pair_y + 1)
         {
-            max_roteta_size = puzzle.field_size - target_pair_x -layer;
+            max_roteta_size = puzzle.field_size - target_pair_x - layer;
         }
         else
         {
             max_roteta_size = target_pair_y - goal_pair_y + 1;
         }
         // targetが端にあるときのための処理
-        if (target_pair_x + 1  == puzzle.field_size -layer){
+        if (target_pair_x + 1 == puzzle.field_size - layer)
+        {
             puzzle.apply_rotation({target_pair_x - 1, target_pair_y - 1, 2});
             return;
         }
@@ -136,101 +137,111 @@ void move_pair1(Puzzle& puzzle, int target_entity, int goal_x, int goal_y,int la
     }
 }
 
-void solve1(Puzzle& puzzle) {
+void solve1(Puzzle &puzzle)
+{
     cout << "rest pair:" << puzzle.max_number - count_pairs(puzzle) << endl;
-    if(count_pairs(puzzle)== puzzle.max_number || count_pairs(puzzle) == puzzle.max_number - 2 ) return;
-    for (int i = 0; i < puzzle.field_size/2; i += 2)
+    if (count_pairs(puzzle) == puzzle.max_number || count_pairs(puzzle) == puzzle.max_number - 2)
+        return;
+    for (int i = 0; i < puzzle.field_size / 2; i += 2)
     {
-       
-        for (int x = i; x < puzzle.field_size-i; x += 2)
+
+        for (int x = i; x < puzzle.field_size - i; x += 2)
         {
             while (puzzle.field.grid[i][x] != puzzle.field.grid[i][x + 1])
             {
-                move_pair1(puzzle,puzzle.field.grid[i][x], x, i,i);
+                move_pair1(puzzle, puzzle.field.grid[i][x], x, i, i);
                 puzzle.print_field();
             }
         }
-        for (int x = i; x < puzzle.field_size-i; x += 2)
+        for (int x = i; x < puzzle.field_size - i; x += 2)
         {
             while (puzzle.field.grid[i + 1][x] != puzzle.field.grid[i + 1][x + 1])
             {
-                move_pair1(puzzle,puzzle.field.grid[i + 1][x], x, i+1,i);
+                move_pair1(puzzle, puzzle.field.grid[i + 1][x], x, i + 1, i);
                 puzzle.print_field();
             }
         }
         puzzle.apply_rotation({0, 0, puzzle.field_size});
         puzzle.print_field();
-        
-        for (int x = i ; x < puzzle.field_size-i-2; x += 2)
+
+        for (int x = i; x < puzzle.field_size - i - 2; x += 2)
         {
             while (puzzle.field.grid[i][x] != puzzle.field.grid[i][x + 1])
             {
-                move_pair1(puzzle,puzzle.field.grid[i][x], x, i,i+2);
+                move_pair1(puzzle, puzzle.field.grid[i][x], x, i, i + 2);
                 puzzle.print_field();
             }
         }
-        for (int x = i ; x < puzzle.field_size-i-2; x += 2)
+        for (int x = i; x < puzzle.field_size - i - 2; x += 2)
         {
             while (puzzle.field.grid[i + 1][x] != puzzle.field.grid[i + 1][x + 1])
             {
-                move_pair1(puzzle,puzzle.field.grid[i + 1][x], x, i + 1,i+2);
+                move_pair1(puzzle, puzzle.field.grid[i + 1][x], x, i + 1, i + 2);
                 puzzle.print_field();
             }
         }
         // 最後に4×4のフィールドができた時に、2回の回転で終わらせる
-        if(puzzle.field_size/2 - i ==2) break;
+        if (puzzle.field_size / 2 - i == 2)
+            break;
         puzzle.apply_rotation({0, 0, puzzle.field_size});
         puzzle.print_field();
-        for (int x = i ; x < puzzle.field_size-i-2; x += 2)
+        for (int x = i; x < puzzle.field_size - i - 2; x += 2)
         {
             while (puzzle.field.grid[i][x] != puzzle.field.grid[i][x + 1])
             {
-                move_pair1(puzzle,puzzle.field.grid[i][x], x, i,i+2);
+                move_pair1(puzzle, puzzle.field.grid[i][x], x, i, i + 2);
                 puzzle.print_field();
             }
         }
-        for (int x = i ; x < puzzle.field_size-i-2; x += 2)
+        for (int x = i; x < puzzle.field_size - i - 2; x += 2)
         {
             while (puzzle.field.grid[i + 1][x] != puzzle.field.grid[i + 1][x + 1])
             {
-                move_pair1(puzzle,puzzle.field.grid[i + 1][x], x, i + 1,i+2);
+                move_pair1(puzzle, puzzle.field.grid[i + 1][x], x, i + 1, i + 2);
                 puzzle.print_field();
             }
         }
         puzzle.apply_rotation({0, 0, puzzle.field_size});
         puzzle.print_field();
-        for (int x = i +2; x < puzzle.field_size-i-2; x += 2)
+        for (int x = i + 2; x < puzzle.field_size - i - 2; x += 2)
         {
             while (puzzle.field.grid[i][x] != puzzle.field.grid[i][x + 1])
             {
-                move_pair1(puzzle,puzzle.field.grid[i][x], x, i,i+2);
+                move_pair1(puzzle, puzzle.field.grid[i][x], x, i, i + 2);
                 puzzle.print_field();
             }
         }
-        for (int x = i +2; x < puzzle.field_size-i-2; x += 2)
+        for (int x = i + 2; x < puzzle.field_size - i - 2; x += 2)
         {
             while (puzzle.field.grid[i + 1][x] != puzzle.field.grid[i + 1][x + 1])
             {
-                move_pair1(puzzle,puzzle.field.grid[i + 1][x], x, i + 1,i+2);
+                move_pair1(puzzle, puzzle.field.grid[i + 1][x], x, i + 1, i + 2);
                 puzzle.print_field();
             }
         }
     }
 }
 
-void find_and_apply_best_move(Puzzle& puzzle, const function<float(Puzzle&)>& evaluator) {
+void find_and_apply_best_move(Puzzle &puzzle, const function<float(Puzzle &)> &evaluator)
+{
     float best_value = -1000000;
     Operation best_op;
 
-    for (int y = 0; y < puzzle.field_size - 1; y++) {
-        for (int x = 0; x < puzzle.field_size - 1; x++) {
-            for (int n = 2; x + n <= puzzle.field_size && y + n <= puzzle.field_size; n++) {
-                Operation op = {x,y,n};
-                if(!puzzle.check_rotation_value(op)) break;             
+    for (int y = 0; y < puzzle.field_size - 1; y++)
+    {
+        for (int x = 0; x < puzzle.field_size - 1; x++)
+        {
+            for (int n = 2; x + n <= puzzle.field_size && y + n <= puzzle.field_size; n++)
+            {
+                Operation op = {x, y, n};
+                if (!puzzle.check_rotation_value(op))
+                    break;
                 puzzle.rotate_for_simulation(op);
-                if(puzzle.field_history.count(puzzle.field)) continue;
+                if (puzzle.field_history.count(puzzle.field))
+                    continue;
                 float current_value = evaluator(puzzle);
-                if (current_value > best_value) {
+                if (current_value > best_value)
+                {
                     best_value = current_value;
                     best_op = op;
                 }
@@ -242,10 +253,67 @@ void find_and_apply_best_move(Puzzle& puzzle, const function<float(Puzzle&)>& ev
     puzzle.print_field();
 }
 
-void solve3(Puzzle& puzzle, int max_time) {
-    for (int i = 0; i < max_time; i++) {
+void solve3(Puzzle &puzzle, int max_time)
+{
+    for (int i = 0; i < max_time; i++)
+    {
         find_and_apply_best_move(puzzle, evalution_func1);
-        cout << "pair:" << 100 * count_pairs(puzzle) / puzzle.max_number <<"%"<< endl;
-        if (count_pairs(puzzle) == puzzle.max_number) return;
+        cout << "pair:" << 100 * count_pairs(puzzle) / puzzle.max_number << "%" << endl;
+        if (count_pairs(puzzle) == puzzle.max_number)
+            return;
     }
+}
+
+// 2.1 全ての手の評価値を計算し、上位10手を返す
+vector<Operation> best_operations_all(Puzzle &puzzle)
+{
+    vector<pair<float, Operation>> candidates(0);
+    for (int y = 0; y < puzzle.field_size - 1; y++)
+    {
+        for (int x = 0; x < puzzle.field_size - 1; x++)
+        {
+            for (int n = 2; x + n <= puzzle.field_size && y + n <= puzzle.field_size; n++)
+            {
+                Operation op = {x, y, n};
+                puzzle.rotate_for_simulation(op);
+                candidates.push_back(make_pair(evalution_func1(puzzle), op));
+                puzzle.undo_rotation(op);
+            }
+        }
+    }
+    sort(candidates.rbegin(), candidates.rend());
+    vector<Operation> result(10);
+    for (int index = 0; index < 10; index++)
+    {
+        result[index] = candidates[index];
+    }
+    return result;
+}
+
+// a以上b以下のランダムな整数
+int rand_int(int a, int b)
+{
+    return a + rand() % (b - a + 1);
+}
+
+// 2.2 ランダムに50個の手の評価値を計算し、上位10手を返す
+vector<Operation> best_operations_random(Puzzle &puzzle)
+{
+    vector<pair<float, Operation>> candidates(50);
+    for (int index = 0; index < 49; index++)
+    {
+        int n = rand_int(2, puzzle.field_size);
+        int x = rand_int(0, puzzle.field_size - n), y = rand_int(0, puzzle.field_size - n);
+        Operation op = {x, y, n};
+        puzzle.rotate_for_simulation(op);
+        candidates[index] = make_pair(evalution_func1(puzzle), op);
+        puzzle.undo_rotation(op);
+    }
+    sort(candidates.rbegin(), candidates.rend());
+    vector<Operation> result(10);
+    for (int index = 0; index < 10; index++)
+    {
+        result[index] = candidates[index];
+    }
+    return result;
 }
