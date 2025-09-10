@@ -44,8 +44,8 @@ void Puzzle::load_problem(const string& filename) {
         exit(1);
     }
 
-    max_number = field_size * field_size / 2;
-    pair_coordinates = vector<vector<int>>(max_number, vector<int>(4, -1));
+    max_pair_number = field_size * field_size / 2;
+    pair_coordinates = vector<vector<int>>(max_pair_number, vector<int>(4, -1));
     for (int y = 0; y < field_size; y++) {
         for (int x = 0; x < field_size; x++) {
             int number = field.grid[y][x];
@@ -69,7 +69,7 @@ void Puzzle::rotate_field_internal(Operation op, int direction) {
         return;
     }
 
-    for (int number = 0; number < max_number; number++) {
+    for (int number = 0; number < max_pair_number; number++) {
         for (int i = 0; i <= 2; i += 2) {
             int& px = pair_coordinates[number][i];
             int& py = pair_coordinates[number][i + 1];

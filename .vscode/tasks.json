@@ -1,0 +1,66 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-generator",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "generator.cpp",
+                "-o",
+                "generator.exe",
+                "-g",
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8",
+                "-Wall",
+                "-Wextra"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "build-Main",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "optimizer.cpp",
+                "main.cpp",
+                "puzzle.cpp",
+                "evalution.cpp",
+                "test.cpp",
+                "-o",
+                "a.out",
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe アクティブなファイルのビルド",
+            "command": "C:\\Program Files (x86)\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "デバッガーによって生成されたタスク。"
+        }
+    ]
+}

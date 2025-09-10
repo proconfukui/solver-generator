@@ -139,8 +139,8 @@ void move_pair1(Puzzle &puzzle, int target_entity, int goal_x, int goal_y, int l
 
 void solve1(Puzzle &puzzle)
 {
-    cout << "rest pair:" << puzzle.max_number - count_pairs(puzzle) << endl;
-    if (count_pairs(puzzle) == puzzle.max_number || count_pairs(puzzle) == puzzle.max_number - 2)
+    cout << "rest pair:" << puzzle.max_pair_number - count_pairs(puzzle) << endl;
+    if (count_pairs(puzzle) == puzzle.max_pair_number || count_pairs(puzzle) == puzzle.max_pair_number - 2)
         return;
     for (int i = 0; i < puzzle.field_size / 2; i += 2)
     {
@@ -258,8 +258,8 @@ void solve3(Puzzle &puzzle, int max_time)
     for (int i = 0; i < max_time; i++)
     {
         find_and_apply_best_move(puzzle, evalution_func1);
-        cout << "pair:" << 100 * count_pairs(puzzle) / puzzle.max_number << "%" << endl;
-        if (count_pairs(puzzle) == puzzle.max_number)
+        cout << "pair:" << 100 * count_pairs(puzzle) / puzzle.max_pair_number << "%" << endl;
+        if (count_pairs(puzzle) == puzzle.max_pair_number)
             return;
     }
 }

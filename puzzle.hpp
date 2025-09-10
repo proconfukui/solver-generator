@@ -13,8 +13,13 @@ class Puzzle
 {
 public:
     int field_size;
-    int max_number;
+    int max_pair_number;
     Field field;
+    
+    // pair_coordinates[n][0]: 値がnのエンティティ1つ目のX
+    // pair_coordinates[n][1]: 値がnのエンティティ1つ目のY
+    // pair_coordinates[n][2]: 値がnのエンティティ2つ目のX
+    // pair_coordinates[n][3]: 値がnのエンティティ2つ目のY
     vector<vector<int>> pair_coordinates;
     vector<Operation> ops;
     set<Field> field_history;
