@@ -16,6 +16,12 @@ struct Operation
     {
         return x == other.x && y == other.y && n == other.n;
     }
+    bool operator < (const Operation& other) const
+    {
+        if(x != other.x) return x < other.x;
+        if(y != other.y) return y < other.y;
+        return n < other.n; 
+    }
 };
 
 struct Field

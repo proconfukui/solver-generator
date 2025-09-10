@@ -222,6 +222,14 @@ void solve1(Puzzle &puzzle)
     }
 }
 
+
+// a以上b以下のランダムな整数
+int rand_int(int a, int b)
+{
+    return a + rand() % (b - a + 1);
+}
+
+
 void find_and_apply_best_move(Puzzle &puzzle, const function<float(Puzzle &)> &evaluator)
 {
     float best_value = -1000000;
@@ -253,19 +261,22 @@ void find_and_apply_best_move(Puzzle &puzzle, const function<float(Puzzle &)> &e
     puzzle.print_field();
 }
 
-void solve3(Puzzle &puzzle, int max_time)
+
+//貪欲法
+void greedy_algorithm(Puzzle &puzzle, int max_time)
 {
     for (int i = 0; i < max_time; i++)
     {
-        find_and_apply_best_move(puzzle, evalution_func1);
+        find_and_apply_best_move(puzzle, evalution_func2);
         cout << "pair:" << 100 * count_pairs(puzzle) / puzzle.max_pair_number << "%" << endl;
+        evalution_func2_for_check(puzzle);
         if (count_pairs(puzzle) == puzzle.max_pair_number)
             return;
     }
 }
 
 // 2.1 全ての手の評価値を計算し、上位10手を返す
-vector<Operation> best_operations_all(Puzzle &puzzle)
+vector<Operation> best_operations_all(Puzzle &puzzle,const function<float(Puzzle &)> &evaluator)
 {
     vector<pair<float, Operation>> candidates(0);
     for (int y = 0; y < puzzle.field_size - 1; y++)
@@ -276,7 +287,7 @@ vector<Operation> best_operations_all(Puzzle &puzzle)
             {
                 Operation op = {x, y, n};
                 puzzle.rotate_for_simulation(op);
-                candidates.push_back(make_pair(evalution_func1(puzzle), op));
+                candidates.push_back(make_pair(evaluator(puzzle), op));
                 puzzle.undo_rotation(op);
             }
         }
@@ -285,19 +296,14 @@ vector<Operation> best_operations_all(Puzzle &puzzle)
     vector<Operation> result(10);
     for (int index = 0; index < 10; index++)
     {
-        result[index] = candidates[index];
+        result[index] = candidates[index].second;
     }
     return result;
 }
 
-// a以上b以下のランダムな整数
-int rand_int(int a, int b)
-{
-    return a + rand() % (b - a + 1);
-}
 
 // 2.2 ランダムに50個の手の評価値を計算し、上位10手を返す
-vector<Operation> best_operations_random(Puzzle &puzzle)
+vector<Operation> best_operations_random(Puzzle &puzzle,const function<float(Puzzle &)> &evaluator)
 {
     vector<pair<float, Operation>> candidates(50);
     for (int index = 0; index < 49; index++)
@@ -306,14 +312,16 @@ vector<Operation> best_operations_random(Puzzle &puzzle)
         int x = rand_int(0, puzzle.field_size - n), y = rand_int(0, puzzle.field_size - n);
         Operation op = {x, y, n};
         puzzle.rotate_for_simulation(op);
-        candidates[index] = make_pair(evalution_func1(puzzle), op);
+        candidates[index] = make_pair(evaluator(puzzle), op);
         puzzle.undo_rotation(op);
     }
-    sort(candidates.rbegin(), candidates.rend());
+    sort(candidates.rbegin(), candidates.rend(),[](const auto& a, const auto& b) {
+        return a.first < b.first; // aのfloat値がbより小さいなら、aを前に};
+    });
     vector<Operation> result(10);
     for (int index = 0; index < 10; index++)
     {
-        result[index] = candidates[index];
+        result[index] = candidates[index].second;
     }
     return result;
 }

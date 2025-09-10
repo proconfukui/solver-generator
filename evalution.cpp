@@ -92,18 +92,29 @@ float evaluete_center_variance(Puzzle &puzzle)
     return normalized_var;
 }
 
-
-float evalution_func2(Puzzle &puzzle)
+float evalution_func2_internal(Puzzle &puzzle,bool test)
 {
-    float w_pair_dis = 1;
-    float w_pair_edge = 1;
-    float w_pair_vartex = 1;
-    float w_pair_num = 1;
+    float w_pair_dis = 10000;
+    float w_pair_edge = 10;
+    float w_pair_num = 50;
+    float w_pair_vartex = 0.5;
     float pair_dis = w_pair_dis * evaluate_square_avg_distance(puzzle);
-    float pair_edge = w_pair_edge * evaluatie_edge_pairs(puzzle,w_pair_edge);
+    float pair_edge = w_pair_num * evaluatie_edge_pairs(puzzle,w_pair_edge);
     float pair_vartex = w_pair_vartex * evaluete_center_variance(puzzle);
-    cout << "pair_dis:" << pair_dis << endl;
-    cout << "pair_edge:" << pair_edge << endl;
-    cout << "pair_vartex:" << pair_vartex << endl;
-    return pair_edge + pair_vartex -pair_dis;
+    if(test){
+        cout << "pair_dis:" << pair_dis << endl;
+        cout << "pair_edge:" << pair_edge << endl;
+        cout << "pair_vartex:" << pair_vartex << endl;
+    }
+    return pair_edge + pair_vartex - pair_dis;
+}
+
+
+float evalution_func2(Puzzle &puzzle){
+    return evalution_func2_internal(puzzle,false);
+}
+
+void evalution_func2_for_check(Puzzle &puzzle)
+{
+    evalution_func2_internal(puzzle,true);
 }
