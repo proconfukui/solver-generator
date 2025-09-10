@@ -325,3 +325,42 @@ vector<Operation> best_operations_random(Puzzle &puzzle,const function<float(Puz
     }
     return result;
 }
+
+size_t BEAM_WIDTH = 10;
+
+void beam_search(Puzzle& puzzle, int search_depth){
+    vector<BeamNode> beam;
+    beam.push_back(BeamNode{puzzle, vector<Operation>(), evalution_func2(puzzle)});
+
+    for (int depth = 0; depth < search_depth; ++depth) {
+        vector<BeamNode> next_beam;
+        for (const auto& node : beam) {
+            // 候補手をランダムに生成
+            vector<Operation> candidates = best_operations_random(const_cast<Puzzle&>(node.puzzle), evalution_func2);
+            for (const auto& op : candidates) {
+                Puzzle next_puzzle = node.puzzle;
+                next_puzzle.apply_rotation(op);
+                vector<Operation> next_ops = node.ops;
+                next_ops.push_back(op);
+                float score = evalution_func2(next_puzzle);
+                next_beam.emplace_back(next_puzzle, next_ops, score);
+            }
+        }
+        // 評価値で降順ソート
+        sort(next_beam.begin(), next_beam.end(), [](const BeamNode& a, const BeamNode& b) {
+            return a.score > b.score;
+        });
+        // 上位BEAM_WIDTH個だけ残す
+        if (next_beam.size() > BEAM_WIDTH) next_beam.resize(BEAM_WIDTH);
+        beam = next_beam;
+    }
+    // 最終的に最も評価値が高いノードを選択
+    if (!beam.empty()) {
+        const auto& best = beam.front();
+        // 操作列を元のpuzzleに適用
+        for (const auto& op : best.ops) {
+            puzzle.apply_rotation(op);
+        }
+    }
+}
+

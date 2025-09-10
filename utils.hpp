@@ -2,6 +2,7 @@
 #pragma once // ヘッダーの重複インクルードを防止
 #include <vector>
 #include<iostream>
+#include "puzzle.hpp"
 using namespace std;
 
 struct Operation
