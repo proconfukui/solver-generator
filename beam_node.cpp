@@ -3,7 +3,7 @@
 #include "utils.hpp"
 
 BeamNode::BeamNode(const Puzzle& p, const vector<Operation>& o, float s){
-        puzzle = puzzle;
+        puzzle = p;
         ops = o;
         score = s;
 };

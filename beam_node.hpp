@@ -7,4 +7,5 @@ struct BeamNode {
     float score;
     BeamNode(const Puzzle& p, const vector<Operation>& o, float s);
     BeamNode(const BeamNode& other);
+    BeamNode() = default;
 };

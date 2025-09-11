@@ -109,7 +109,6 @@ float evalution_func2_internal(Puzzle &puzzle,bool test)
     return pair_edge + pair_vartex - pair_dis;
 }
 
-
 float evalution_func2(Puzzle &puzzle){
     return evalution_func2_internal(puzzle,false);
 }

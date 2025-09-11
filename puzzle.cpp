@@ -7,14 +7,16 @@
 #include <stdexcept>
 #include <random>
 
+
+
 Puzzle::Puzzle(const string& filename) {
     load_problem(filename);
 }
 
 Puzzle::Puzzle(const Puzzle& other){
+    field_size = other.field_size;
     field = other.field;
     max_pair_number = other.max_pair_number;
-    field = other.field;
     pair_coordinates = other.pair_coordinates;
     ops = other.ops;
     field_history = other.field_history;
@@ -75,6 +77,7 @@ void Puzzle::rotate_field_internal(Operation op, int direction) {
     int n = op.n;
     if (!check_rotation_value(op)) {
         cout << "This step is invalid(x: " << x << ", y: " << y << ", n: " << n << ")" << endl;
+        exit(1);
         return;
     }
 

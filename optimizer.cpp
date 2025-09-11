@@ -3,236 +3,10 @@
 #include "utils.hpp"
 #include "evalution.hpp"
 #include "beam_node.hpp"
+#include "steps_table.hpp"
 #include <functional>
 #include <array>
 #include <iostream>
-
-
-using size_type = size_t;
-
-void move_pair1(Puzzle &puzzle, int target_entity, int goal_x, int goal_y, int layer)
-{
-    int current_x1 = puzzle.pair_coordinates[target_entity][0];
-    int current_y1 = puzzle.pair_coordinates[target_entity][1];
-    int current_x2 = puzzle.pair_coordinates[target_entity][2];
-    int current_y2 = puzzle.pair_coordinates[target_entity][3];
-
-    int target_pair_x, target_pair_y;
-    int goal_pair_x = goal_x + 1;
-    int goal_pair_y = goal_y;
-
-    // goal_x, goal_y にあるのが1つ目と仮定し、2つ目を動かす
-    if (current_x1 == goal_x && current_y1 == goal_y)
-    {
-        target_pair_x = current_x2;
-        target_pair_y = current_y2;
-    }
-    else // goal_x, goal_y にあるのが2つ目と仮定し、1つ目を動かす
-    {
-        target_pair_x = current_x1;
-        target_pair_y = current_y1;
-    }
-
-    if (goal_pair_x == target_pair_x && goal_pair_y == target_pair_y)
-    {
-        return;
-    }
-
-    // targetがgoalのすぐ下にある場合
-    if (goal_pair_x - 1 == target_pair_x && goal_pair_y + 1 == target_pair_y)
-    {
-        puzzle.apply_rotation({goal_pair_x - 1, goal_pair_y, 2});
-        return;
-    }
-
-    // targetが上に達して、かつgoalの右側にあるとき
-    if (goal_pair_x < target_pair_x && goal_pair_y == target_pair_y)
-    {
-        int max_rotate_size;
-        if (puzzle.field_size - target_pair_y < target_pair_x - goal_pair_x)
-        {
-            max_rotate_size = puzzle.field_size;
-        }
-        else
-        {
-            max_rotate_size = target_pair_x - goal_pair_x + 1;
-        }
-        puzzle.apply_rotation({target_pair_x - max_rotate_size + 1, target_pair_y, max_rotate_size});
-        puzzle.apply_rotation({target_pair_x - max_rotate_size + 1, target_pair_y, max_rotate_size});
-        puzzle.apply_rotation({target_pair_x - max_rotate_size + 1, target_pair_y, max_rotate_size});
-        return;
-    }
-    // targerがgoalのすぐ右下にある場合
-    if (goal_pair_x == target_pair_x && target_pair_y - 1 == goal_pair_y)
-    {
-        puzzle.apply_rotation({target_pair_x - 1, target_pair_y, 2});
-        return;
-    }
-
-    // targetがgoalの左に達した場合
-    if (goal_pair_x == target_pair_x)
-    {
-        if (goal_pair_y == target_pair_y)
-            return;
-        int max_roteta_size;
-        if (puzzle.field_size - layer - target_pair_x < target_pair_y - goal_pair_y + 1)
-        {
-            max_roteta_size = puzzle.field_size - target_pair_x - layer;
-        }
-        else
-        {
-            max_roteta_size = target_pair_y - goal_pair_y + 1;
-        }
-        // targetが端にあるときのための処理
-        if (target_pair_x + 1 == puzzle.field_size - layer)
-        {
-            puzzle.apply_rotation({target_pair_x - 1, target_pair_y - 1, 2});
-            return;
-        }
-        puzzle.apply_rotation({target_pair_x, target_pair_y - max_roteta_size + 1, max_roteta_size});
-        return;
-    }
-
-    // targetが上に達して、かつgoalの左側にあるとき
-    if (goal_pair_x > target_pair_x && goal_pair_y + 1 == target_pair_y)
-    {
-        int max_rotate_size;
-        if (puzzle.field_size - target_pair_y - layer < goal_pair_x - target_pair_x)
-        {
-            max_rotate_size = puzzle.field_size - target_pair_y - layer;
-        }
-        else
-        {
-            max_rotate_size = goal_pair_x - target_pair_x;
-        }
-        puzzle.apply_rotation({target_pair_x, target_pair_y, max_rotate_size});
-        return;
-    }
-
-    // 動かしたいエンティティが目標の右下にある場合
-    if (goal_pair_x < target_pair_x && goal_pair_y < target_pair_y)
-    {
-        int max_rotate_size;
-        if (target_pair_x - goal_pair_x < target_pair_y - goal_pair_y)
-        {
-            max_rotate_size = target_pair_x - goal_pair_x + 1;
-        }
-        else
-        {
-            max_rotate_size = target_pair_y - goal_pair_y + 1;
-        }
-        puzzle.apply_rotation({target_pair_x - max_rotate_size + 1, target_pair_y - max_rotate_size + 1, max_rotate_size});
-        return;
-    }
-    // 動かしたいエンティティが目標の左下にある場合
-    if (goal_pair_x > target_pair_x && goal_pair_y < target_pair_y)
-    {
-        int max_rotate_size;
-        if (goal_pair_x - target_pair_x < target_pair_y - goal_pair_y)
-        {
-            max_rotate_size = goal_pair_x - target_pair_x + 1;
-        }
-        else
-        {
-            max_rotate_size = target_pair_y - goal_pair_y;
-        }
-        puzzle.apply_rotation({target_pair_x, target_pair_y - max_rotate_size + 1, max_rotate_size});
-        return;
-    }
-}
-
-void solve1(Puzzle &puzzle)
-{
-    cout << "rest pair:" << puzzle.max_pair_number - count_pairs(puzzle) << endl;
-    if (count_pairs(puzzle) == puzzle.max_pair_number || count_pairs(puzzle) == puzzle.max_pair_number - 2)
-        return;
-    for (int i = 0; i < puzzle.field_size / 2; i += 2)
-    {
-
-        for (int x = i; x < puzzle.field_size - i; x += 2)
-        {
-            while (puzzle.field.grid[i][x] != puzzle.field.grid[i][x + 1])
-            {
-                move_pair1(puzzle, puzzle.field.grid[i][x], x, i, i);
-                puzzle.print_field();
-            }
-        }
-        for (int x = i; x < puzzle.field_size - i; x += 2)
-        {
-            while (puzzle.field.grid[i + 1][x] != puzzle.field.grid[i + 1][x + 1])
-            {
-                move_pair1(puzzle, puzzle.field.grid[i + 1][x], x, i + 1, i);
-                puzzle.print_field();
-            }
-        }
-        puzzle.apply_rotation({0, 0, puzzle.field_size});
-        puzzle.print_field();
-
-        for (int x = i; x < puzzle.field_size - i - 2; x += 2)
-        {
-            while (puzzle.field.grid[i][x] != puzzle.field.grid[i][x + 1])
-            {
-                move_pair1(puzzle, puzzle.field.grid[i][x], x, i, i + 2);
-                puzzle.print_field();
-            }
-        }
-        for (int x = i; x < puzzle.field_size - i - 2; x += 2)
-        {
-            while (puzzle.field.grid[i + 1][x] != puzzle.field.grid[i + 1][x + 1])
-            {
-                move_pair1(puzzle, puzzle.field.grid[i + 1][x], x, i + 1, i + 2);
-                puzzle.print_field();
-            }
-        }
-        // 最後に4×4のフィールドができた時に、2回の回転で終わらせる
-        if (puzzle.field_size / 2 - i == 2)
-            break;
-        puzzle.apply_rotation({0, 0, puzzle.field_size});
-        puzzle.print_field();
-        for (int x = i; x < puzzle.field_size - i - 2; x += 2)
-        {
-            while (puzzle.field.grid[i][x] != puzzle.field.grid[i][x + 1])
-            {
-                move_pair1(puzzle, puzzle.field.grid[i][x], x, i, i + 2);
-                puzzle.print_field();
-            }
-        }
-        for (int x = i; x < puzzle.field_size - i - 2; x += 2)
-        {
-            while (puzzle.field.grid[i + 1][x] != puzzle.field.grid[i + 1][x + 1])
-            {
-                move_pair1(puzzle, puzzle.field.grid[i + 1][x], x, i + 1, i + 2);
-                puzzle.print_field();
-            }
-        }
-        puzzle.apply_rotation({0, 0, puzzle.field_size});
-        puzzle.print_field();
-        for (int x = i + 2; x < puzzle.field_size - i - 2; x += 2)
-        {
-            while (puzzle.field.grid[i][x] != puzzle.field.grid[i][x + 1])
-            {
-                move_pair1(puzzle, puzzle.field.grid[i][x], x, i, i + 2);
-                puzzle.print_field();
-            }
-        }
-        for (int x = i + 2; x < puzzle.field_size - i - 2; x += 2)
-        {
-            while (puzzle.field.grid[i + 1][x] != puzzle.field.grid[i + 1][x + 1])
-            {
-                move_pair1(puzzle, puzzle.field.grid[i + 1][x], x, i + 1, i + 2);
-                puzzle.print_field();
-            }
-        }
-    }
-}
-
-
-// a以上b以下のランダムな整数
-int rand_int(int a, int b)
-{
-    return a + rand() % (b - a + 1);
-}
-
 
 void find_and_apply_best_move(Puzzle &puzzle, const function<float(Puzzle &)> &evaluator)
 {
@@ -245,6 +19,7 @@ void find_and_apply_best_move(Puzzle &puzzle, const function<float(Puzzle &)> &e
         {
             for (int n = 2; x + n <= puzzle.field_size && y + n <= puzzle.field_size; n++)
             {
+                if( x == 0 && y == 0 && n == puzzle.field_size) continue;
                 Operation op = {x, y, n};
                 if (!puzzle.check_rotation_value(op))
                     break;
@@ -266,6 +41,12 @@ void find_and_apply_best_move(Puzzle &puzzle, const function<float(Puzzle &)> &e
 }
 
 
+
+// a以上b以下のランダムな整数
+int rand_int(int a, int b)
+{
+    return a + rand() % (b - a + 1);
+}
 //貪欲法
 void greedy_algorithm(Puzzle &puzzle, int max_time)
 {
@@ -306,27 +87,30 @@ vector<Operation> best_operations_all(Puzzle &puzzle,const function<float(Puzzle
 }
 
 
-// 2.2 ランダムに100個の手の評価値を計算し、上位10手を返す
-// 今は12×12でテストをしているから問題ないが、手の総数が100以下の時にクラッシュすることが考えられるので、それ用の配列を後でutils.hppに定義する
-vector<Operation> best_operations_random(const Puzzle &puzzle,const function<float(Puzzle &)> &evaluator)
+// 2.2 ランダムに個の手の評価値を計算し、上位10手を返す
+vector<Operation> best_operations_random(const Puzzle &puzzle,const function<float(Puzzle &)> &evaluator,int num_sample)
 {
+    // 取りうる全ての手よりもサンプル数
+    num_sample = min(num_sample,steps_table[puzzle.field_size]);
     // puzzleをpureな関数にするため必要
     Puzzle temp_puzzle = puzzle;
     set<pair<float,Operation>> candidates;
-    while(candidates.size() < 100)
+    while(candidates.size() < num_sample)
     {
         int n = rand_int(2, temp_puzzle.field_size);
         int x = rand_int(0, temp_puzzle.field_size - n), y = rand_int(0, temp_puzzle.field_size - n);
+        if(n == temp_puzzle.field_size && x == 0 && y == 0) continue;
         Operation op = {x, y, n};
-    
+        
         temp_puzzle.rotate_for_simulation(op);
+        //evalution_func2_for_check(temp_puzzle);
         candidates.insert(make_pair(evaluator(temp_puzzle),op));
-        temp_puzzle.undo_rotation(op);
+        temp_puzzle.undo_rotation(op);        
     }
 
-    vector<Operation> result(10);
-    auto it = candidates.begin();
-    for (int i = 0; i < 10 && it != candidates.end(); ++i,++it)
+    vector<Operation> result;
+    auto it = candidates.rbegin();
+    for (int i = 0; i < 10 && it != candidates.rend(); ++i,++it)
     {
         result.push_back(it->second);
     }
@@ -334,40 +118,58 @@ vector<Operation> best_operations_random(const Puzzle &puzzle,const function<flo
 }
 
 
-size_t BEAM_WIDTH = 10;
-
-void beam_search(Puzzle& puzzle, int search_depth){
+void beam_search_step(Puzzle& puzzle, int search_depth,size_t beam_width,int commit_step){
+    if(search_depth < commit_step){
+        cout << "This parameter is invalid" << "(search_depth: " << search_depth << " < commit_step: " << commit_step << ")" << endl;
+        exit(1);
+    }
     vector<BeamNode> beam;
-    beam.push_back(BeamNode{puzzle, vector<Operation>(), evalution_func2(puzzle)});
+    beam.emplace_back(puzzle, vector<Operation>(), evalution_func2(puzzle));
 
     for (int depth = 0; depth < search_depth; ++depth) {
         vector<BeamNode> next_beam;
-        for (const auto& node : beam) {
+        next_beam.reserve(beam.size()*10);
+        for (auto& node : beam) {
             // 候補手をランダムに生成
-            vector<Operation> candidates = best_operations_random(node.puzzle, evalution_func2);
+            vector<Operation> candidates = best_operations_random(node.puzzle, evalution_func2,100);
             for (const auto& op : candidates) {
-                Puzzle next_puzzle = node.puzzle;
-                next_puzzle.apply_rotation(op);
+                node.puzzle.rotate_for_simulation(op);
+                float score = evalution_func2(node.puzzle);
                 vector<Operation> next_ops = node.ops;
                 next_ops.push_back(op);
-                float score = evalution_func2(next_puzzle);
-                next_beam.emplace_back(next_puzzle, next_ops, score);
+                next_beam.emplace_back(node.puzzle, next_ops, score);
+                // Puzzleオブジェクトのコピーの削減のため、履歴を後で追加する
+                next_beam.back().puzzle.field_history.insert(node.puzzle.field);
+                node.puzzle.undo_rotation(op);
             }
         }
         // 評価値で降順ソート
         sort(next_beam.begin(), next_beam.end(), [](const BeamNode& a, const BeamNode& b) {
             return a.score > b.score;
         });
-        // 上位BEAM_WIDTH個だけ残す
-        if (next_beam.size() > BEAM_WIDTH) next_beam.resize(BEAM_WIDTH);
-        beam = next_beam;
+        // 上位beam_width個だけ残す
+        if (next_beam.size() > beam_width) next_beam.resize(beam_width);
+        beam = move(next_beam);
     }
     // 最終的に最も評価値が高いノードを選択
     if (!beam.empty()) {
         const auto& best = beam.front();
         // 操作列を元のpuzzleに適用
-        for (const auto& op : best.ops) {
-            puzzle.apply_rotation(op);
+        for (int i = 0; i < commit_step;i++) {
+            puzzle.apply_rotation(best.ops[i]);
         }
+    }
+}
+
+//ビームサーチ
+void beam_search(Puzzle &puzzle, int search_depth,size_t beam_width,int commit_step, int max_time)
+{
+    for (int i = 0; i < max_time; i++)
+    {
+        beam_search_step(puzzle,search_depth,beam_width,commit_step);
+        cout << "pair:" << 100 * count_pairs(puzzle) / puzzle.max_pair_number << "%" << endl;
+        puzzle.print_field();
+        if (count_pairs(puzzle) == puzzle.max_pair_number)
+            return;
     }
 }

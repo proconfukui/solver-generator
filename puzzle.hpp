@@ -5,6 +5,8 @@
 #include <set>
 #include "json.hpp"
 #include "utils.hpp"
+#include <unordered_set>
+#include <cstdint>
 
 using namespace std;
 using namespace nlohmann;
@@ -22,10 +24,14 @@ public:
     // pair_coordinates[n][3]: 値がnのエンティティ2つ目のY
     vector<vector<int>> pair_coordinates;
     vector<Operation> ops;
-    set<Field> field_history;
+    // set<Field> field_history;
+    unordered_set<uint64_t> field_history;
 
     Puzzle(const string& filename); // コンストラクタ
     Puzzle(const Puzzle& other); //コピーコンストラクタ
+    Puzzle() = default;
+
+    uint64_t calculate_hash() const;
 
     void apply_rotation(Operation op);
     void rotate_for_simulation(Operation op);
