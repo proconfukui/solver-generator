@@ -25,6 +25,7 @@ public:
     set<Field> field_history;
 
     Puzzle(const string& filename); // コンストラクタ
+    Puzzle(const Puzzle& other); //コピーコンストラクタ
 
     void apply_rotation(Operation op);
     void rotate_for_simulation(Operation op);

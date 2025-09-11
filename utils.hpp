@@ -13,7 +13,7 @@ struct Operation
     void print() const {
         cout << "x :" << x << ", y :" << y << ", n :" << n << endl;
     }
-    bool operator==(const Operation& other) const
+    bool operator == (const Operation& other) const
     {
         return x == other.x && y == other.y && n == other.n;
     }

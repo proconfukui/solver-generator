@@ -11,6 +11,15 @@ Puzzle::Puzzle(const string& filename) {
     load_problem(filename);
 }
 
+Puzzle::Puzzle(const Puzzle& other){
+    field = other.field;
+    max_pair_number = other.max_pair_number;
+    field = other.field;
+    pair_coordinates = other.pair_coordinates;
+    ops = other.ops;
+    field_history = other.field_history;
+}
+
 void Puzzle::load_problem(const string& filename) {
     ifstream input(filename);
     if (!input) {

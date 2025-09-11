@@ -2,9 +2,13 @@
 #include "optimizer.hpp"
 #include "utils.hpp"
 #include "evalution.hpp"
+#include "beam_node.hpp"
 #include <functional>
 #include <array>
 #include <iostream>
+
+
+using size_type = size_t;
 
 void move_pair1(Puzzle &puzzle, int target_entity, int goal_x, int goal_y, int layer)
 {
@@ -302,29 +306,33 @@ vector<Operation> best_operations_all(Puzzle &puzzle,const function<float(Puzzle
 }
 
 
-// 2.2 ランダムに50個の手の評価値を計算し、上位10手を返す
-vector<Operation> best_operations_random(Puzzle &puzzle,const function<float(Puzzle &)> &evaluator)
+// 2.2 ランダムに100個の手の評価値を計算し、上位10手を返す
+// 今は12×12でテストをしているから問題ないが、手の総数が100以下の時にクラッシュすることが考えられるので、それ用の配列を後でutils.hppに定義する
+vector<Operation> best_operations_random(const Puzzle &puzzle,const function<float(Puzzle &)> &evaluator)
 {
-    vector<pair<float, Operation>> candidates(50);
-    for (int index = 0; index < 49; index++)
+    // puzzleをpureな関数にするため必要
+    Puzzle temp_puzzle = puzzle;
+    set<pair<float,Operation>> candidates;
+    while(candidates.size() < 100)
     {
-        int n = rand_int(2, puzzle.field_size);
-        int x = rand_int(0, puzzle.field_size - n), y = rand_int(0, puzzle.field_size - n);
+        int n = rand_int(2, temp_puzzle.field_size);
+        int x = rand_int(0, temp_puzzle.field_size - n), y = rand_int(0, temp_puzzle.field_size - n);
         Operation op = {x, y, n};
-        puzzle.rotate_for_simulation(op);
-        candidates[index] = make_pair(evaluator(puzzle), op);
-        puzzle.undo_rotation(op);
+    
+        temp_puzzle.rotate_for_simulation(op);
+        candidates.insert(make_pair(evaluator(temp_puzzle),op));
+        temp_puzzle.undo_rotation(op);
     }
-    sort(candidates.rbegin(), candidates.rend(),[](const auto& a, const auto& b) {
-        return a.first < b.first; // aのfloat値がbより小さいなら、aを前に};
-    });
+
     vector<Operation> result(10);
-    for (int index = 0; index < 10; index++)
+    auto it = candidates.begin();
+    for (int i = 0; i < 10 && it != candidates.end(); ++i,++it)
     {
-        result[index] = candidates[index].second;
+        result.push_back(it->second);
     }
     return result;
 }
+
 
 size_t BEAM_WIDTH = 10;
 
@@ -336,7 +344,7 @@ void beam_search(Puzzle& puzzle, int search_depth){
         vector<BeamNode> next_beam;
         for (const auto& node : beam) {
             // 候補手をランダムに生成
-            vector<Operation> candidates = best_operations_random(const_cast<Puzzle&>(node.puzzle), evalution_func2);
+            vector<Operation> candidates = best_operations_random(node.puzzle, evalution_func2);
             for (const auto& op : candidates) {
                 Puzzle next_puzzle = node.puzzle;
                 next_puzzle.apply_rotation(op);
@@ -363,4 +371,3 @@ void beam_search(Puzzle& puzzle, int search_depth){
         }
     }
 }
-
