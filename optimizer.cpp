@@ -24,7 +24,7 @@ void find_and_apply_best_move(Puzzle &puzzle, const function<float(Puzzle &)> &e
                 if (!puzzle.check_rotation_value(op))
                     break;
                 puzzle.rotate_for_simulation(op);
-                if (puzzle.field_history.count(puzzle.field))
+                if (puzzle.field_history.count(puzzle.calculate_hash()))
                     continue;
                 float current_value = evaluator(puzzle);
                 if (current_value > best_value)
@@ -39,8 +39,6 @@ void find_and_apply_best_move(Puzzle &puzzle, const function<float(Puzzle &)> &e
     puzzle.apply_rotation(best_op);
     puzzle.print_field();
 }
-
-
 
 // a以上b以下のランダムな整数
 int rand_int(int a, int b)
@@ -86,7 +84,6 @@ vector<Operation> best_operations_all(Puzzle &puzzle,const function<float(Puzzle
     return result;
 }
 
-
 // 2.2 ランダムに個の手の評価値を計算し、上位10手を返す
 vector<Operation> best_operations_random(const Puzzle &puzzle,const function<float(Puzzle &)> &evaluator,int num_sample)
 {
@@ -117,7 +114,6 @@ vector<Operation> best_operations_random(const Puzzle &puzzle,const function<flo
     return result;
 }
 
-
 void beam_search_step(Puzzle& puzzle, int search_depth,size_t beam_width,int commit_step){
     if(search_depth < commit_step){
         cout << "This parameter is invalid" << "(search_depth: " << search_depth << " < commit_step: " << commit_step << ")" << endl;
@@ -139,7 +135,7 @@ void beam_search_step(Puzzle& puzzle, int search_depth,size_t beam_width,int com
                 next_ops.push_back(op);
                 next_beam.emplace_back(node.puzzle, next_ops, score);
                 // Puzzleオブジェクトのコピーの削減のため、履歴を後で追加する
-                next_beam.back().puzzle.field_history.insert(node.puzzle.field);
+                next_beam.back().puzzle.field_history.insert(node.puzzle.calculate_hash());
                 node.puzzle.undo_rotation(op);
             }
         }

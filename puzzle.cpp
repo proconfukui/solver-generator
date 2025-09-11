@@ -7,12 +7,25 @@
 #include <stdexcept>
 #include <random>
 
+// ハッシュ計算用の定数
+const uint64_t HASH_BASE = 41;
 
+uint64_t Puzzle::calculate_hash() const{
+    uint64_t current_hash = 0;
+    for(const auto& row : field.grid){
+        for(int cell_value : row){
+            current_hash = current_hash * HASH_BASE + cell_value;
+        }
+    }
+    return current_hash;
+}
 
+// コピー用のコンストラクタ
 Puzzle::Puzzle(const string& filename) {
     load_problem(filename);
 }
 
+// 問題をロードする用のコンストラクタ
 Puzzle::Puzzle(const Puzzle& other){
     field_size = other.field_size;
     field = other.field;
@@ -69,6 +82,7 @@ void Puzzle::load_problem(const string& filename) {
             }
         }
     }
+    field_history.insert(calculate_hash());
 }
 
 void Puzzle::rotate_field_internal(Operation op, int direction) {
@@ -118,7 +132,7 @@ void Puzzle::rotate_field_internal(Operation op, int direction) {
 void Puzzle::apply_rotation(Operation op) {
     rotate_field_internal(op, 1);
     ops.push_back(op);
-    field_history.insert(field);
+    field_history.insert(calculate_hash());
 }
 
 void Puzzle::rotate_for_simulation(Operation op) {
