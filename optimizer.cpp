@@ -73,7 +73,7 @@ vector<Operation> best_operations_all(Puzzle &puzzle,const function<float(Puzzle
                 candidates.push_back(make_pair(evaluator(puzzle), op));
                 puzzle.undo_rotation(op);
             }
-        }
+        }   
     }
     sort(candidates.rbegin(), candidates.rend());
     vector<Operation> result(10);
@@ -84,7 +84,7 @@ vector<Operation> best_operations_all(Puzzle &puzzle,const function<float(Puzzle
     return result;
 }
 
-// 2.2 ランダムに個の手の評価値を計算し、上位10手を返す
+// 2.2 ランダムにの手の評価値を計算し、上位10手を返す
 vector<Operation> best_operations_random(const Puzzle &puzzle,const function<float(Puzzle &)> &evaluator,int num_sample)
 {
     // 取りうる全ての手よりもサンプル数
@@ -160,12 +160,21 @@ void beam_search_step(Puzzle& puzzle, int search_depth,size_t beam_width,int com
 //ビームサーチ
 void beam_search(Puzzle &puzzle, int search_depth,size_t beam_width,int commit_step, int max_time)
 {
-    for (int i = 0; i < max_time; i++)
+    string evalution_output = "";
+    string pair_num_output = "";
+    for (int i = 0; i < max_time/commit_step; i++)
     {
         beam_search_step(puzzle,search_depth,beam_width,commit_step);
+        evalution_output += to_string(evalution_func2_for_check(puzzle))+",";
+        pair_num_output += to_string(100 * count_pairs(puzzle) / puzzle.max_pair_number)+",";
         cout << "pair:" << 100 * count_pairs(puzzle) / puzzle.max_pair_number << "%" << endl;
         puzzle.print_field();
-        if (count_pairs(puzzle) == puzzle.max_pair_number)
+        if (count_pairs(puzzle) == puzzle.max_pair_number){
+            cout << pair_num_output << endl;
+            cout << evalution_output << endl;
             return;
+        }    
     }
+    cout << pair_num_output << endl;
+    cout << evalution_output << endl;
 }

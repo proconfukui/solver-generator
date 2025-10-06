@@ -11,7 +11,7 @@ int main()
     //solve1(my_puzzle);
 
     auto start_time = std::chrono::high_resolution_clock::now();
-    beam_search(my_puzzle,5,10,5,200);
+    beam_search(my_puzzle,10,20,5,500);
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     std::cout << "実行時間: " << duration.count() << " ミリ秒" << std::endl;
